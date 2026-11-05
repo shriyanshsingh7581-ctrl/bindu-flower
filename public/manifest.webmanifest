@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Bindu flower — Rajasthan ka event expert",
+  "short_name": "Bindu flower",
+  "description": "Bindu flower (Rajasthan ka event expert) — Book curated balloon arches, romantic room setups, kids theme birthdays, baby showers, and wedding floral decor.",
+  "theme_color": "#FAF7F2",
+  "background_color": "#FAF7F2",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
