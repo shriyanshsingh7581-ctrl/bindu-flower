@@ -121,7 +121,7 @@ export const AuthPage: React.FC<{ mode: 'login' | 'register' | 'forgot' }> = ({ 
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98201 12345"
+                  placeholder="+91 99835 62406"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 text-xs"
                 />
               </div>

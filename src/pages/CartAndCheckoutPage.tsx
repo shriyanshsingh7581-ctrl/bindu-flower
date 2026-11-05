@@ -640,7 +640,7 @@ export const CheckoutPage: React.FC = () => {
                 required
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="+91 98765 43210"
+                placeholder="+91 99835 62406"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 text-xs"
               />
             </div>

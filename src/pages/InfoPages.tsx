@@ -555,14 +555,14 @@ export const InfoPage: React.FC<{
         {/* Sticky Bottom 3-Button Franchise Bar (Matches Video 00:55 - 01:12: Call | WhatsApp | Apply Now) */}
         <div className="fixed bottom-0 left-0 right-0 z-40 h-16 bg-white border-t border-[#1C1618]/15 grid grid-cols-3 items-center shadow-2xl">
           <a
-            href={`tel:${(websiteSettings.supportPhone || '+918282025444').replace(/\s+/g, '')}`}
+            href={`tel:${(websiteSettings.supportPhone || '+919983562406').replace(/\s+/g, '')}`}
             className="h-full flex flex-col items-center justify-center gap-0.5 text-xs font-bold text-[#0F172A] border-r border-[#1C1618]/10"
           >
             <PhoneCall className="w-4 h-4" />
             <span>Call</span>
           </a>
           <a
-            href={`https://wa.me/${websiteSettings.whatsappNumber || '918282025444'}?text=${encodeURIComponent(
+            href={`https://wa.me/${websiteSettings.whatsappNumber || '919983562406'}?text=${encodeURIComponent(
               `Hi ${websiteSettings.brandName}! I am interested in applying for a Franchise in my city.`
             )}`}
             target="_blank"
@@ -735,7 +735,9 @@ export const InfoPage: React.FC<{
           <div className="bg-white rounded-2xl p-5 border border-[#1C1618]/10 space-y-3 text-xs">
             <p className="flex items-center gap-2.5 font-bold text-[#1C1618]">
               <PhoneCall className="w-4 h-4 text-[#D8315B]" />
-              <a href="tel:+918282025444">{websiteSettings.supportPhone || '+91 82820 25444'}</a>
+              <a href={`tel:${(websiteSettings.supportPhone || '+919983562406').replace(/\s+/g, '')}`}>
+                {websiteSettings.supportPhone || '+91 99835 62406'}
+              </a>
             </p>
             <p className="flex items-center gap-2.5 font-semibold text-[#1C1618]">
               <Mail className="w-4 h-4 text-[#D8315B]" />

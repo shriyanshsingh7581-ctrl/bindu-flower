@@ -44,6 +44,7 @@ import {
   WebsiteSetting,
 } from '../types';
 import {
+  resolveAssetUrl,
   SEED_ADDONS,
   SEED_CATEGORIES,
   SEED_CITIES,
@@ -450,22 +451,42 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Merge Firestore live documents with seed catalog so the platform is populated out-of-the-box
   const products = useMemo(() => {
     const map = new Map<string, Product>();
-    SEED_PRODUCTS.forEach((p) => map.set(p.id, p));
-    dbProducts.forEach((p) => map.set(p.id, p));
+    const normalizeProduct = (p: Product): Product => {
+      let gallery = p.galleryImages;
+      try {
+        const parsed = JSON.parse(p.galleryImages || '[]');
+        if (Array.isArray(parsed)) {
+          gallery = JSON.stringify(parsed.map((img: string) => resolveAssetUrl(img)));
+        }
+      } catch {
+        // ignore
+      }
+      return {
+        ...p,
+        primaryImage: resolveAssetUrl(p.primaryImage),
+        galleryImages: gallery,
+      };
+    };
+    SEED_PRODUCTS.forEach((p) => map.set(p.id, normalizeProduct(p)));
+    dbProducts.forEach((p) => map.set(p.id, normalizeProduct(p)));
     return Array.from(map.values());
   }, [dbProducts]);
 
   const categories = useMemo(() => {
     const map = new Map<string, Category>();
-    SEED_CATEGORIES.forEach((c) => map.set(c.id, c));
-    dbCategories.forEach((c) => map.set(c.id, c));
+    SEED_CATEGORIES.forEach((c) =>
+      map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) })
+    );
+    dbCategories.forEach((c) =>
+      map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) })
+    );
     return Array.from(map.values()).sort((a, b) => a.sortOrder - b.sortOrder);
   }, [dbCategories]);
 
   const addOns = useMemo(() => {
     const map = new Map<string, AddOn>();
-    SEED_ADDONS.forEach((a) => map.set(a.id, a));
-    dbAddOns.forEach((a) => map.set(a.id, a));
+    SEED_ADDONS.forEach((a) => map.set(a.id, { ...a, image: resolveAssetUrl(a.image) }));
+    dbAddOns.forEach((a) => map.set(a.id, { ...a, image: resolveAssetUrl(a.image) }));
     return Array.from(map.values());
   }, [dbAddOns]);
 
@@ -505,6 +526,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         !base.brandName || base.brandName.toLowerCase() === 'utsavdekor'
           ? 'Bindu flower'
           : base.brandName,
+      supportPhone:
+        !base.supportPhone || base.supportPhone.includes('82820')
+          ? '+91 99835 62406'
+          : base.supportPhone,
+      whatsappNumber:
+        !base.whatsappNumber || base.whatsappNumber.includes('82820')
+          ? '919983562406'
+          : base.whatsappNumber,
     };
   }, [dbSettings]);
 

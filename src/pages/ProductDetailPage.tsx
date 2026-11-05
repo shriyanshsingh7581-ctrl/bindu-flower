@@ -992,7 +992,7 @@ export const ProductDetailPage: React.FC = () => {
             {/* Right: WhatsApp Chat Box + Crimson "Book this setup ->" Button */}
             <div className="flex items-center gap-2.5">
               <a
-                href={`https://wa.me/${websiteSettings.whatsappNumber || '918282025444'}?text=${encodeURIComponent(
+                href={`https://wa.me/${websiteSettings.whatsappNumber || '919983562406'}?text=${encodeURIComponent(
                   `Hi ${websiteSettings.brandName}! I want to inquire about "${product.title}" (₹${baseCityDiscounted}) in ${selectedCity.name}.`
                 )}`}
                 target="_blank"

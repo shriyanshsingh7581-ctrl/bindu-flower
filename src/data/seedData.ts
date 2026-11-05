@@ -9,20 +9,63 @@ import {
   WebsiteSetting,
 } from '../types';
 
+import heroBannerImg from '../assets/images/hero_festive_celebration_1793892771323.jpg';
+import birthdayRoseGoldImg from '../assets/images/decor_birthday_rosegold_1793892772357.jpg';
+import kidsThemeImg from '../assets/images/decor_kids_theme_1793892774203.jpg';
+import romanticAnniversaryImg from '../assets/images/decor_romantic_anniversary_1793892775207.jpg';
+import babyShowerImg from '../assets/images/decor_baby_shower_1793892775843.jpg';
+import weddingHaldiImg from '../assets/images/decor_wedding_haldi_1793892777149.jpg';
+import romanticRedRoomImg from '../assets/images/bd_romantic_red_room_1793894843571.jpg';
+import jungleSafariKidsImg from '../assets/images/bd_jungle_safari_kids_1793894845234.jpg';
+import carBootSurpriseImg from '../assets/images/bd_car_boot_surprise_1793894847226.jpg';
+import cabanaTerraceImg from '../assets/images/bd_cabana_terrace_setup_1793894847583.jpg';
+import welcomeBabyRingImg from '../assets/images/bd_welcome_baby_blue_pink_1793894849670.jpg';
+import blackGoldMilestoneImg from '../assets/images/bd_black_gold_milestone_1793894849806.jpg';
+
 export const ASSET_MANIFEST = {
-  heroBanner: '/src/assets/images/hero_festive_celebration_1793892771323.jpg',
-  birthdayRoseGold: '/src/assets/images/decor_birthday_rosegold_1793892772357.jpg',
-  kidsTheme: '/src/assets/images/decor_kids_theme_1793892774203.jpg',
-  romanticAnniversary: '/src/assets/images/decor_romantic_anniversary_1793892775207.jpg',
-  babyShower: '/src/assets/images/decor_baby_shower_1793892775843.jpg',
-  weddingHaldi: '/src/assets/images/decor_wedding_haldi_1793892777149.jpg',
-  romanticRedRoom: '/src/assets/images/bd_romantic_red_room_1793894843571.jpg',
-  jungleSafariKids: '/src/assets/images/bd_jungle_safari_kids_1793894845234.jpg',
-  carBootSurprise: '/src/assets/images/bd_car_boot_surprise_1793894847226.jpg',
-  cabanaTerrace: '/src/assets/images/bd_cabana_terrace_setup_1793894847583.jpg',
-  welcomeBabyRing: '/src/assets/images/bd_welcome_baby_blue_pink_1793894849670.jpg',
-  blackGoldMilestone: '/src/assets/images/bd_black_gold_milestone_1793894849806.jpg',
+  heroBanner: heroBannerImg,
+  birthdayRoseGold: birthdayRoseGoldImg,
+  kidsTheme: kidsThemeImg,
+  romanticAnniversary: romanticAnniversaryImg,
+  babyShower: babyShowerImg,
+  weddingHaldi: weddingHaldiImg,
+  romanticRedRoom: romanticRedRoomImg,
+  jungleSafariKids: jungleSafariKidsImg,
+  carBootSurprise: carBootSurpriseImg,
+  cabanaTerrace: cabanaTerraceImg,
+  welcomeBabyRing: welcomeBabyRingImg,
+  blackGoldMilestone: blackGoldMilestoneImg,
 };
+
+const LEGACY_PATH_MAP: Record<string, string> = {
+  '/src/assets/images/hero_festive_celebration_1793892771323.jpg': heroBannerImg,
+  '/src/assets/images/decor_birthday_rosegold_1793892772357.jpg': birthdayRoseGoldImg,
+  '/src/assets/images/decor_kids_theme_1793892774203.jpg': kidsThemeImg,
+  '/src/assets/images/decor_romantic_anniversary_1793892775207.jpg': romanticAnniversaryImg,
+  '/src/assets/images/decor_baby_shower_1793892775843.jpg': babyShowerImg,
+  '/src/assets/images/decor_wedding_haldi_1793892777149.jpg': weddingHaldiImg,
+  '/src/assets/images/bd_romantic_red_room_1793894843571.jpg': romanticRedRoomImg,
+  '/src/assets/images/bd_jungle_safari_kids_1793894845234.jpg': jungleSafariKidsImg,
+  '/src/assets/images/bd_car_boot_surprise_1793894847226.jpg': carBootSurpriseImg,
+  '/src/assets/images/bd_cabana_terrace_setup_1793894847583.jpg': cabanaTerraceImg,
+  '/src/assets/images/bd_welcome_baby_blue_pink_1793894849670.jpg': welcomeBabyRingImg,
+  '/src/assets/images/bd_black_gold_milestone_1793894849806.jpg': blackGoldMilestoneImg,
+};
+
+export function resolveAssetUrl(rawUrl?: string): string {
+  if (!rawUrl) return birthdayRoseGoldImg;
+  const trimmed = rawUrl.trim();
+  if (LEGACY_PATH_MAP[trimmed]) {
+    return LEGACY_PATH_MAP[trimmed];
+  }
+  for (const [legacyKey, bundledUrl] of Object.entries(LEGACY_PATH_MAP)) {
+    const fileName = legacyKey.split('/').pop();
+    if (fileName && trimmed.endsWith(fileName)) {
+      return bundledUrl;
+    }
+  }
+  return trimmed;
+}
 
 export const TIME_SLOTS = [
   '09:00 AM - 12:00 PM',
@@ -38,8 +81,8 @@ export const SEED_WEBSITE_SETTINGS: WebsiteSetting = {
   id: 'global',
   brandName: 'Bindu flower',
   announcementText: 'Happy Diwali ✦ A little light. A lot of celebration.',
-  supportPhone: '+91 82820 25444',
-  whatsappNumber: '918282025444',
+  supportPhone: '+91 99835 62406',
+  whatsappNumber: '919983562406',
   supportEmail: 'support@binduflower.com',
   advancePercentage: 40,
   allowAdvancePayment: true,
@@ -1765,12 +1808,12 @@ export const SEED_REVIEWS: Review[] = [
 
 export const SEED_DECORATORS: Decorator[] = [
   {
-    id: 'dec-mumbai-1',
-    name: 'Rajeshwari & Team',
-    phone: '+91 98201 11223',
-    cityId: 'mumbai',
-    cityName: 'Mumbai',
-    specialty: 'Luxury Sequin & Organic Arches',
+    id: 'dec-jaipur-1',
+    name: 'Bindu Flower Rajasthan Team',
+    phone: '+91 99835 62406',
+    cityId: 'jaipur',
+    cityName: 'Jaipur',
+    specialty: 'Luxury Sequin, Floral & Organic Arches',
     rating: 4.9,
     isAvailable: true,
     createdAt: NOW_ISO,

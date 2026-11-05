@@ -538,8 +538,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </p>
 
             <p className="text-base sm:text-lg font-extrabold text-[#1C1618] tabular-nums">
-              <a href="tel:+918282025444" className="hover:text-[#D8315B] transition-colors">
-                {websiteSettings.supportPhone || '+91 82820 25444'}
+              <a
+                href={`tel:${(websiteSettings.supportPhone || '+919983562406').replace(/\s+/g, '')}`}
+                className="hover:text-[#D8315B] transition-colors"
+              >
+                {websiteSettings.supportPhone || '+91 99835 62406'}
               </a>
             </p>
 
@@ -876,9 +879,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <span>Categories</span>
             </button>
 
-            {/* Tab 3: WhatsApp (Elevated Green Circle - Video 00:01) */}
+            {/* Tab 3: WhatsApp (Elevated Green Circle) */}
             <a
-              href={`https://wa.me/${websiteSettings.whatsappNumber || '918282025444'}?text=${encodeURIComponent(
+              href={`https://wa.me/${websiteSettings.whatsappNumber || '919983562406'}?text=${encodeURIComponent(
                 `Hi ${websiteSettings.brandName}! I want to book a decoration setup in ${selectedCity.name}.`
               )}`}
               target="_blank"
@@ -891,9 +894,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <span className="text-[#1C1618] font-semibold">WhatsApp</span>
             </a>
 
-            {/* Tab 4: Call (Dials +918282025444 - Video 00:52) */}
+            {/* Tab 4: Call (Dials +91 99835 62406) */}
             <a
-              href={`tel:${(websiteSettings.supportPhone || '+918282025444').replace(/\s+/g, '')}`}
+              href={`tel:${(websiteSettings.supportPhone || '+919983562406').replace(/\s+/g, '')}`}
               className="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl mx-1 hover:text-[#D8315B] transition-colors"
             >
               <PhoneCall className="w-5 h-5" />
