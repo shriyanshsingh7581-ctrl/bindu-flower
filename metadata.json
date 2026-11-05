@@ -1,0 +1,6 @@
+{
+  "name": "UtsavDekor — Celebration & Balloon Decoration Booking Platform",
+  "description": "India's premier celebration and balloon decoration booking platform for birthdays, anniversaries, baby showers, weddings, and romantic surprises across 25+ cities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

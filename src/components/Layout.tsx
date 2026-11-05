@@ -1,0 +1,920 @@
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+  MapPin,
+  Search,
+  ShoppingBag,
+  User,
+  X,
+  ChevronDown,
+  PhoneCall,
+  ShieldCheck,
+  Download,
+  Sparkles,
+  Home,
+  LayoutGrid,
+  MessageCircle,
+  Menu,
+  Store,
+} from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import { usePWAInstall, useOnlineStatus } from '../hooks/usePWAInstall';
+import { ASSET_MANIFEST } from '../data/seedData';
+import { SmartImage } from './SmartImage';
+import { SubcategoryItem } from '../types';
+
+export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const {
+    categories,
+    products,
+    cities,
+    selectedCity,
+    setSelectedCityById,
+    cart,
+    currentUser,
+    isAdmin,
+    websiteSettings,
+    toasts,
+    dismissToast,
+  } = useStore();
+
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
+  const isOnline = useOnlineStatus();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [cityModalOpen, setCityModalOpen] = useState(false);
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeMegaCategory, setActiveMegaCategory] = useState<string | null>(null);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
+
+  const totalCartItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const isFranchisePage =
+    location.pathname === '/franchise' || location.pathname === '/partner-with-us';
+
+  const searchSuggestions =
+    searchQuery.trim().length > 1
+      ? products
+          .filter(
+            (p) =>
+              p.isEnabled &&
+              (p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.subcategoryId.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+          .slice(0, 6)
+      : [];
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setSearchOpen(false);
+    navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  // Exact 18 Categories for the "Browse by Category" Bottom Sheet (Video 00:40 - 00:43)
+  const browseSheetItems = [
+    {
+      label: 'Birthday',
+      to: '/collections/birthday',
+      bg: 'bg-[#FDEBF0]',
+      img: ASSET_MANIFEST.birthdayRoseGold,
+    },
+    {
+      label: 'Kids Theme',
+      to: '/collections/kids-themes',
+      bg: 'bg-[#E6F4FE]',
+      img: ASSET_MANIFEST.kidsTheme,
+    },
+    {
+      label: 'Baby Shower',
+      to: '/collections/baby-kids?sub=baby-shower',
+      bg: 'bg-[#FDEBF0]',
+      img: ASSET_MANIFEST.babyShower,
+    },
+    {
+      label: 'Welcome Baby',
+      to: '/collections/baby-kids?sub=newborn-welcome',
+      bg: 'bg-[#FCEEE9]',
+      img: ASSET_MANIFEST.welcomeBabyRing,
+    },
+    {
+      label: 'Naming Ceremony',
+      to: '/collections/baby-kids?sub=naming-ceremony',
+      bg: 'bg-[#FEF7E0]',
+      img: ASSET_MANIFEST.welcomeBabyRing,
+    },
+    {
+      label: 'Annaprashan',
+      to: '/collections/other?sub=diwali',
+      bg: 'bg-[#FDF0E6]',
+      img: ASSET_MANIFEST.weddingHaldi,
+    },
+    {
+      label: 'Corporate Event',
+      to: '/collections/other?sub=corporate',
+      bg: 'bg-[#EAFBF0]',
+      img: ASSET_MANIFEST.blackGoldMilestone,
+    },
+    {
+      label: 'Car Boot Decoration',
+      to: '/collections/other?sub=car-boot',
+      bg: 'bg-[#E8F2FC]',
+      img: ASSET_MANIFEST.carBootSurprise,
+    },
+    {
+      label: 'Canopy Decoration',
+      to: '/collections/romantic?sub=canopy',
+      bg: 'bg-[#FDECEB]',
+      img: ASSET_MANIFEST.cabanaTerrace,
+    },
+    {
+      label: 'Proposal Decoration',
+      to: '/collections/romantic?sub=proposal',
+      bg: 'bg-[#FDEBF0]',
+      img: ASSET_MANIFEST.romanticAnniversary,
+    },
+    {
+      label: 'Bachelorette Decoration',
+      to: '/collections/wedding?sub=bachelorette',
+      bg: 'bg-[#F4EDFC]',
+      img: ASSET_MANIFEST.birthdayRoseGold,
+    },
+    {
+      label: 'Wedding Decoration',
+      to: '/collections/wedding',
+      bg: 'bg-[#FDECEB]',
+      img: ASSET_MANIFEST.weddingHaldi,
+    },
+    {
+      label: 'First Night',
+      to: '/collections/wedding?sub=first-night',
+      bg: 'bg-[#FDF2EA]',
+      img: ASSET_MANIFEST.romanticRedRoom,
+    },
+    {
+      label: 'Anniversary Decoration',
+      to: '/collections/anniversary',
+      bg: 'bg-[#FDECEB]',
+      img: ASSET_MANIFEST.romanticAnniversary,
+    },
+    {
+      label: 'Aqiqah Decoration',
+      to: '/collections/baby-kids?sub=aqiqah',
+      bg: 'bg-[#FDF4EB]',
+      img: ASSET_MANIFEST.babyShower,
+    },
+    {
+      label: 'Diwali Decoration',
+      to: '/collections/other?sub=diwali',
+      bg: 'bg-[#FEF6E0]',
+      img: ASSET_MANIFEST.weddingHaldi,
+    },
+    {
+      label: 'Halloween Decor',
+      to: '/collections/other?sub=halloween',
+      bg: 'bg-[#FDF0E6]',
+      img: ASSET_MANIFEST.blackGoldMilestone,
+    },
+    {
+      label: 'Bindu Flower',
+      to: '/collections/other?sub=bindu-flower-decor',
+      bg: 'bg-[#FDEBF0]',
+      img: ASSET_MANIFEST.weddingHaldi,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white text-[#1C1618]">
+      {/* 1. Top Festive Announcement Bar (Matches Video 00:01 & 00:55) */}
+      <div
+        className={`${
+          isFranchisePage ? 'bg-[#0F172A]' : 'bg-[#3A1618]'
+        } text-white text-[11px] sm:text-xs px-3 py-1.5 text-center font-medium`}
+      >
+        {isFranchisePage ? (
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-1.5 flex-wrap">
+            <span>Franchise applications are now open for selected cities across India.</span>
+            <a href="#franchise-form" className="text-[#FBBF24] underline font-bold">
+              Apply Now
+            </a>
+          </div>
+        ) : (
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+            <span aria-hidden="true">🪔</span>
+            <span>{websiteSettings.announcementText}</span>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="ml-3 px-2 py-0.5 rounded bg-white/15 text-[#F4C2C2] font-bold hover:underline"
+              >
+                Admin Panel
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 2. Main Header Bar (Matches Video 00:01 - 00:08) */}
+      <header
+        onMouseLeave={() => setActiveMegaCategory(null)}
+        className="sticky top-0 z-40 bg-white border-b border-[#1C1618]/8"
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
+          {/* Left: Hamburger + Brand Logo with "Rajasthan ka event expert" in small letters above "Bindu flower" */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setCategorySheetOpen(true)}
+              aria-label="Open categories menu"
+              className="p-1.5 -ml-1.5 text-[#1C1618] hover:text-[#D8315B] transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+
+            <Link to="/" className="flex flex-col leading-none">
+              <span className="text-[10px] sm:text-[11px] font-medium text-[#555555] tracking-normal mb-0.5">
+                Rajasthan ka event expert
+              </span>
+              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#D8315B]">
+                {websiteSettings.brandName}
+              </span>
+            </Link>
+          </div>
+
+          {/* Center Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-[#333333]">
+            <Link
+              to="/collections/birthday"
+              onMouseEnter={() => setActiveMegaCategory('birthday')}
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Birthday
+            </Link>
+            <Link
+              to="/collections/kids-themes"
+              onMouseEnter={() => setActiveMegaCategory('kids-themes')}
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Kids Themes
+            </Link>
+            <Link
+              to="/collections/anniversary"
+              onMouseEnter={() => setActiveMegaCategory('anniversary')}
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Anniversary
+            </Link>
+            <Link
+              to="/collections/baby-kids"
+              onMouseEnter={() => setActiveMegaCategory('baby-kids')}
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Baby Shower & Welcome
+            </Link>
+            <Link
+              to="/collections/wedding"
+              onMouseEnter={() => setActiveMegaCategory('wedding')}
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Wedding & Haldi
+            </Link>
+            <Link
+              to="/collections/other?sub=diwali"
+              className="hover:text-[#D8315B] transition-colors py-2"
+            >
+              Diwali Decor
+            </Link>
+            <Link
+              to="/collections/other?sub=bindu-flower-decor"
+              className="text-[#D8315B] hover:underline py-2"
+            >
+              Bindu Flower
+            </Link>
+          </nav>
+
+          {/* Right: Search Icon, Bag Icon, User Icon */}
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <button
+              type="button"
+              onClick={() => setSearchOpen((v) => !v)}
+              aria-label="Search decorations"
+              className="p-1.5 text-[#1C1618] hover:text-[#D8315B] transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            <Link
+              to="/cart"
+              aria-label="Shopping bag"
+              className="relative p-1.5 text-[#1C1618] hover:text-[#D8315B] transition-colors"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalCartItems > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#D8315B] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
+                  {totalCartItems}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              to={currentUser ? '/account' : '/login'}
+              aria-label="Customer account"
+              className="p-1.5 text-[#1C1618] hover:text-[#D8315B] transition-colors"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1C1618] text-white text-xs font-semibold"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#F4C2C2]" />
+                <span>Admin</span>
+              </Link>
+            )}
+
+            {!isInstalled && isInstallable && (
+              <button
+                type="button"
+                onClick={install}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1B8E3E] text-white text-xs font-semibold"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>App</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Mega Menu Dropdown */}
+        {activeMegaCategory && (
+          <div
+            onMouseLeave={() => setActiveMegaCategory(null)}
+            className="hidden lg:block absolute left-0 right-0 top-full bg-white border-b border-[#1C1618]/10 shadow-xl z-50"
+          >
+            <div className="max-w-7xl mx-auto px-8 py-6 grid grid-cols-4 gap-8">
+              {categories
+                .filter((c) => c.id === activeMegaCategory)
+                .map((cat) => {
+                  let subs: SubcategoryItem[] = [];
+                  try {
+                    subs = JSON.parse(cat.subcategoriesJson || '[]');
+                  } catch {
+                    subs = [];
+                  }
+                  return (
+                    <div key={cat.id}>
+                      <Link
+                        to={`/collections/${cat.slug}`}
+                        onClick={() => setActiveMegaCategory(null)}
+                        className="text-base font-bold text-[#1C1618] hover:text-[#D8315B] block mb-2.5"
+                      >
+                        {cat.name}
+                      </Link>
+                      <ul className="space-y-1.5 text-xs text-[#555555]">
+                        {subs.map((sub) => (
+                          <li key={sub.id}>
+                            <Link
+                              to={`/collections/${cat.slug}?sub=${sub.slug}`}
+                              onClick={() => setActiveMegaCategory(null)}
+                              className="hover:text-[#D8315B] transition-colors block py-0.5"
+                            >
+                              {sub.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              <div className="col-span-3 grid grid-cols-3 gap-6 border-l border-[#1C1618]/8 pl-8">
+                {products
+                  .filter((p) => p.categoryId === activeMegaCategory && p.isEnabled)
+                  .slice(0, 3)
+                  .map((prod) => (
+                    <Link
+                      key={prod.id}
+                      to={`/product/${prod.slug}`}
+                      onClick={() => setActiveMegaCategory(null)}
+                      className="group block"
+                    >
+                      <div className="aspect-square rounded-xl overflow-hidden bg-[#F7F3EE] mb-2">
+                        <SmartImage
+                          src={prod.primaryImage}
+                          alt={prod.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                      <p className="text-xs font-bold text-[#1C1618] group-hover:text-[#D8315B] line-clamp-1">
+                        {prod.title}
+                      </p>
+                      <p className="text-xs font-bold text-[#1C1618] tabular-nums">
+                        ₹{prod.discountedPrice.toLocaleString('en-IN')}
+                      </p>
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* 3. Soft Pink Sub-Header Bar: "Deliver to: Select your city" + "Partner with us" (Matches Video 00:01 - 00:03) */}
+      {!isFranchisePage && (
+        <div className="bg-[#FFF0F3] border-b border-[#D8315B]/12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setCityModalOpen(true)}
+              className="flex items-center gap-2 text-left group"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#D8315B]/12 flex items-center justify-center text-[#D8315B] shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div className="leading-tight">
+                <span className="block text-[10px] text-[#6E5D5F]">Deliver to</span>
+                <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#D8315B]">
+                  <span>{selectedCity ? selectedCity.name : 'Select your city'}</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </button>
+
+            <Link
+              to="/franchise"
+              className="px-3.5 py-1.5 rounded-full bg-white border border-[#D8315B]/25 text-xs font-semibold text-[#1C1618] hover:border-[#D8315B] transition-colors shadow-2xs whitespace-nowrap"
+            >
+              Partner with us
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Expandable Search Drawer */}
+      {searchOpen && (
+        <div className="border-b border-[#1C1618]/10 bg-white px-4 py-3 shadow-md z-30">
+          <div className="max-w-3xl mx-auto">
+            <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2">
+              <Search className="w-4 h-4 text-[#6E5D5F] absolute left-3.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search Simple Balloon Decor, Rose Gold, Cocomelon, Diwali, Welcome Baby..."
+                autoFocus
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#1C1618]/15 text-xs sm:text-sm focus:outline-none focus:border-[#D8315B]"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-bold hover:bg-[#b8254a] whitespace-nowrap"
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="p-2 text-[#6E5D5F] hover:text-[#1C1618]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </form>
+
+            {searchSuggestions.length > 0 && (
+              <div className="mt-2.5 divide-y divide-[#1C1618]/8 border border-[#1C1618]/10 rounded-xl overflow-hidden bg-white">
+                {searchSuggestions.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={`/product/${item.slug}`}
+                    onClick={() => setSearchOpen(false)}
+                    className="flex items-center justify-between p-2.5 hover:bg-[#FFF0F3]/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.primaryImage}
+                        alt={item.title}
+                        referrerPolicy="no-referrer"
+                        className="w-11 h-11 object-cover rounded-lg"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-[#1C1618]">{item.title}</p>
+                        <p className="text-[11px] text-[#6E5D5F]">
+                          ★ {item.rating.toFixed(1)} · {item.reviewsCount} reviews
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-extrabold text-[#D8315B] tabular-nums">
+                      ₹{item.discountedPrice.toLocaleString('en-IN')}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 pb-24">{children}</main>
+
+      {/* 4. Exact BalloonDekor White Card Footer (Matches Video 00:39) */}
+      <footer className="px-3 sm:px-6 lg:px-8 pb-24 pt-6 bg-[#FAF7F5]">
+        <div className="max-w-7xl mx-auto bg-white rounded-3xl border border-[#1C1618]/10 p-6 sm:p-10 shadow-xs">
+          <div className="space-y-4 pb-6 border-b border-[#1C1618]/10">
+            <Link to="/" className="inline-flex flex-col leading-none">
+              <span className="text-[10px] sm:text-[11px] font-medium text-[#555555] mb-0.5">
+                Rajasthan ka event expert
+              </span>
+              <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#D8315B]">
+                {websiteSettings.brandName}
+              </span>
+            </Link>
+
+            <p className="text-xs sm:text-sm text-[#555555] max-w-md leading-relaxed">
+              Premium balloon decorations & party setups delivered across India with love.
+            </p>
+
+            <p className="text-base sm:text-lg font-extrabold text-[#1C1618] tabular-nums">
+              <a href="tel:+918282025444" className="hover:text-[#D8315B] transition-colors">
+                {websiteSettings.supportPhone || '+91 82820 25444'}
+              </a>
+            </p>
+
+            {/* Social Media Circles (Matches Video 00:39) */}
+            <div className="flex items-center gap-3 pt-1">
+              {[
+                { label: 'Instagram', text: 'IG' },
+                { label: 'Facebook', text: 'f' },
+                { label: 'Pinterest', text: 'P' },
+                { label: 'LinkedIn', text: 'in' },
+                { label: 'X', text: '𝕏' },
+              ].map((soc) => (
+                <a
+                  key={soc.label}
+                  href="#top"
+                  aria-label={soc.label}
+                  className="w-9 h-9 rounded-full border border-[#1C1618]/15 flex items-center justify-center text-xs font-bold text-[#1C1618] hover:border-[#D8315B] hover:text-[#D8315B] transition-colors"
+                >
+                  {soc.text}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* 2-Column Links Grid: IMPORTANT LINKS & INFO (Matches Video 00:39) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 py-6 border-b border-[#1C1618]/10 text-xs sm:text-sm">
+            <div>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#1C1618] mb-3.5">
+                IMPORTANT LINKS
+              </h3>
+              <ul className="space-y-2.5 text-[#444444]">
+                <li>
+                  <Link to="/terms-and-conditions" className="hover:text-[#D8315B]">
+                    Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/about-us" className="hover:text-[#D8315B]">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/payment-info" className="hover:text-[#D8315B]">
+                    Disclaimer & Payment Info
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/privacy-policy" className="hover:text-[#D8315B]">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cancellation-policy" className="hover:text-[#D8315B]">
+                    Cancellation Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#1C1618] mb-3.5">
+                INFO
+              </h3>
+              <ul className="space-y-2.5 text-[#444444]">
+                <li>
+                  <Link to="/contact-us" className="hover:text-[#D8315B]">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/collections" className="hover:text-[#D8315B]">
+                    Sitemap
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/our-work" className="hover:text-[#D8315B]">
+                    Our Recent Work
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/franchise" className="hover:text-[#D8315B]">
+                    International Presence & Franchise
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/blogs" className="hover:text-[#D8315B]">
+                    Read Blogs
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div className="col-span-2 sm:col-span-1">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#1C1618] mb-3.5">
+                POPULAR CATEGORIES
+              </h3>
+              <ul className="space-y-2 text-xs text-[#444444]">
+                <li>
+                  <Link to="/collections/birthday" className="hover:text-[#D8315B]">
+                    Birthday Decoration at Home
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/collections/kids-themes" className="hover:text-[#D8315B]">
+                    Kids Birthday Themes
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/collections/anniversary" className="hover:text-[#D8315B]">
+                    Romantic Anniversary Decor
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/collections/baby-kids" className="hover:text-[#D8315B]">
+                    Baby Shower & Welcome Baby
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/collections/other?sub=bindu-flower-decor" className="hover:text-[#D8315B]">
+                    Bindu Flower Special
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-5 text-center space-y-2 text-xs text-[#6E5D5F]">
+            <p>© 2026 {websiteSettings.brandName.toLowerCase().replace(/\s+/g, '')}.com · All Rights Reserved</p>
+            <div className="flex items-center justify-center gap-4">
+              <Link to="/privacy-policy" className="hover:text-[#1C1618]">
+                Privacy
+              </Link>
+              <Link to="/terms-and-conditions" className="hover:text-[#1C1618]">
+                Terms
+              </Link>
+              <Link to="/payment-info" className="hover:text-[#1C1618]">
+                Disclaimer
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* 5. "Browse by Category" Bottom Sheet Drawer (Exact Match to Video 00:40 - 00:43) */}
+      {categorySheetOpen && (
+        <div
+          onClick={() => setCategorySheetOpen(false)}
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-end justify-center"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-2xl rounded-t-3xl p-5 sm:p-6 max-h-[82vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-200"
+          >
+            {/* Top Drag Handle Bar */}
+            <div className="w-12 h-1.5 bg-[#E0DCD8] rounded-full mx-auto mb-4" />
+
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#1C1618]">
+                Browse by Category
+              </h2>
+              <button
+                type="button"
+                onClick={() => setCategorySheetOpen(false)}
+                className="p-1.5 rounded-full bg-[#F5F5F5] text-[#555555] hover:text-[#1C1618]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4 pb-6">
+              {browseSheetItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => setCategorySheetOpen(false)}
+                  className="flex flex-col items-center text-center group"
+                >
+                  <div
+                    className={`w-full aspect-square rounded-2xl ${item.bg} p-2 flex items-center justify-center overflow-hidden border border-[#1C1618]/6 group-hover:border-[#D8315B] transition-all`}
+                  >
+                    <SmartImage
+                      src={item.img}
+                      alt={item.label}
+                      className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-[#1C1618] mt-1.5 leading-tight group-hover:text-[#D8315B]">
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. City Selection Modal */}
+      {cityModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-[#1C1618]/10">
+            <div className="flex items-center justify-between pb-4 border-b border-[#1C1618]/8">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#1C1618]">
+                  Select Your Celebration City
+                </h2>
+                <p className="text-xs text-[#6E5D5F]">
+                  Same-day doorstep decoration across 72+ cities in India
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCityModalOpen(false)}
+                className="p-1.5 rounded-lg text-[#6E5D5F] hover:text-[#1C1618]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 my-5 max-h-[60vh] overflow-y-auto">
+              {cities
+                .filter((c) => c.isEnabled)
+                .map((city) => {
+                  const active = city.id === selectedCity.id;
+                  return (
+                    <button
+                      key={city.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCityById(city.id);
+                        setCityModalOpen(false);
+                      }}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        active
+                          ? 'border-[#D8315B] bg-[#FFF0F3] text-[#D8315B]'
+                          : 'border-[#1C1618]/12 hover:border-[#D8315B]/40 text-[#1C1618]'
+                      }`}
+                    >
+                      <p className="text-xs sm:text-sm font-bold">{city.name}</p>
+                      <p className="text-[10px] text-[#6E5D5F] truncate">{city.state}</p>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* iOS PWA Install Modal */}
+      {showIOSGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-[#1C1618]">
+              Install {websiteSettings.brandName} App
+            </h3>
+            <p className="mt-2 text-xs text-[#6E5D5F] leading-relaxed">
+              1. Tap the <strong>Share</strong> icon in Safari.
+              <br />
+              2. Select <strong>Add to Home Screen</strong>.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowIOSGuide(false)}
+              className="mt-4 w-full rounded-xl bg-[#D8315B] py-2.5 text-xs font-semibold text-white"
+            >
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div className="fixed bottom-20 left-4 z-50 flex items-center gap-2 rounded-xl bg-[#D97706] px-4 py-2 text-xs font-semibold text-white shadow-lg">
+          <span>Offline Mode — Showing cached catalog</span>
+        </div>
+      )}
+
+      {/* Toast Notifications */}
+      <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl shadow-lg text-xs font-medium border ${
+              t.type === 'error'
+                ? 'bg-[#C93B2B] text-white border-[#C93B2B]'
+                : t.type === 'info'
+                ? 'bg-[#1C1618] text-white border-[#1C1618]'
+                : 'bg-[#1B8E3E] text-white border-[#1B8E3E]'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span>{t.title}</span>
+            </div>
+            <button type="button" onClick={() => dismissToast(t.id)}>
+              <X className="w-3.5 h-3.5 opacity-80 hover:opacity-100" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* 7. Exact 5-Tab Bottom Navigation Bar (Matches Video 00:01 - 00:54: Home | Categories | WhatsApp | Call | Get Franchise) */}
+      {!isFranchisePage && (
+        <nav
+          aria-label="Bottom Navigation"
+          className="fixed bottom-0 left-0 right-0 z-40 h-16 bg-white border-t border-[#1C1618]/10 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
+        >
+          <div className="max-w-xl mx-auto h-full grid grid-cols-5 items-center text-[11px] font-semibold text-[#444444]">
+            {/* Tab 1: Home */}
+            <Link
+              to="/"
+              onClick={() => setCategorySheetOpen(false)}
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl mx-1 transition-colors ${
+                location.pathname === '/' && !categorySheetOpen
+                  ? 'bg-[#FFF0F3] text-[#D8315B] font-bold'
+                  : 'hover:text-[#D8315B]'
+              }`}
+            >
+              <Home className="w-5 h-5" />
+              <span>Home</span>
+            </Link>
+
+            {/* Tab 2: Categories (Opens Browse by Category Sheet - Video 00:40) */}
+            <button
+              type="button"
+              onClick={() => setCategorySheetOpen((prev) => !prev)}
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl mx-1 transition-colors ${
+                categorySheetOpen || location.pathname.startsWith('/collections')
+                  ? 'bg-[#FFF0F3] text-[#D8315B] font-bold'
+                  : 'hover:text-[#D8315B]'
+              }`}
+            >
+              <LayoutGrid className="w-5 h-5" />
+              <span>Categories</span>
+            </button>
+
+            {/* Tab 3: WhatsApp (Elevated Green Circle - Video 00:01) */}
+            <a
+              href={`https://wa.me/${websiteSettings.whatsappNumber || '918282025444'}?text=${encodeURIComponent(
+                `Hi ${websiteSettings.brandName}! I want to book a decoration setup in ${selectedCity.name}.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center gap-0.5 -mt-3"
+            >
+              <div className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-md ring-4 ring-white">
+                <MessageCircle className="w-5 h-5 fill-white" />
+              </div>
+              <span className="text-[#1C1618] font-semibold">WhatsApp</span>
+            </a>
+
+            {/* Tab 4: Call (Dials +918282025444 - Video 00:52) */}
+            <a
+              href={`tel:${(websiteSettings.supportPhone || '+918282025444').replace(/\s+/g, '')}`}
+              className="flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl mx-1 hover:text-[#D8315B] transition-colors"
+            >
+              <PhoneCall className="w-5 h-5" />
+              <span>Call</span>
+            </a>
+
+            {/* Tab 5: Get Franchise with NEW Badge (Video 00:01 & 00:55) */}
+            <Link
+              to="/franchise"
+              onClick={() => setCategorySheetOpen(false)}
+              className="relative flex flex-col items-center justify-center gap-0.5 py-1 rounded-xl mx-0.5 bg-[#FFF4E5] text-[#D97706] font-bold"
+            >
+              <span className="absolute -top-1.5 right-1 px-1.5 py-0.2 rounded-full bg-[#FBBF24] text-[#1C1618] text-[8px] font-extrabold uppercase">
+                NEW
+              </span>
+              <Store className="w-5 h-5 text-[#EA580C]" />
+              <span className="text-[10px] text-[#9A3412] whitespace-nowrap">Get Franchise</span>
+            </Link>
+          </div>
+        </nav>
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>/collections</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>/collections/birthday</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/kids-themes</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/anniversary</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/romantic</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/baby-kids</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/wedding</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/collections/other</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>/our-work</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/about-us</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/contact-us</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/faq</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>/partner-with-us</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+</urlset>

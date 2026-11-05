@@ -1,0 +1,352 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Customer profile and private account details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "defaultCity": { "type": "string", "maxLength": 64 },
+        "savedAddresses": { "type": "string", "maxLength": 2000 },
+        "wishlist": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "createdAt", "updatedAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized platform administrator record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "maxLength": 160 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Decoration package listing with pricing, inclusions, and media",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "maxLength": 160 },
+        "title": { "type": "string", "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "categoryId": { "type": "string", "maxLength": 80 },
+        "subcategoryId": { "type": "string", "maxLength": 80 },
+        "originalPrice": { "type": "number" },
+        "discountedPrice": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "setupDuration": { "type": "string", "maxLength": 80 },
+        "primaryImage": { "type": "string", "maxLength": 500 },
+        "galleryImages": { "type": "string", "maxLength": 2500 },
+        "includedItems": { "type": "string", "maxLength": 2000 },
+        "excludedItems": { "type": "string", "maxLength": 1500 },
+        "instructions": { "type": "string", "maxLength": 1500 },
+        "themeColors": { "type": "string", "maxLength": 500 },
+        "isTrending": { "type": "boolean" },
+        "isEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "slug",
+        "title",
+        "description",
+        "categoryId",
+        "subcategoryId",
+        "originalPrice",
+        "discountedPrice",
+        "rating",
+        "reviewsCount",
+        "setupDuration",
+        "primaryImage",
+        "includedItems",
+        "isEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Occasion category and subcategories",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "slug": { "type": "string", "maxLength": 120 },
+        "name": { "type": "string", "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 600 },
+        "bannerImage": { "type": "string", "maxLength": 500 },
+        "subcategoriesJson": { "type": "string", "maxLength": 3000 },
+        "isEnabled": { "type": "boolean" },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "slug", "name", "description", "bannerImage", "subcategoriesJson", "isEnabled", "sortOrder", "createdAt", "updatedAt"]
+    },
+    "AddOn": {
+      "title": "AddOn",
+      "description": "Customizable celebration add-on item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string", "maxLength": 80 },
+        "price": { "type": "number" },
+        "image": { "type": "string", "maxLength": 500 },
+        "description": { "type": "string", "maxLength": 400 },
+        "isMandatory": { "type": "boolean" },
+        "isEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "category", "price", "image", "isMandatory", "isEnabled", "createdAt", "updatedAt"]
+    },
+    "City": {
+      "title": "City",
+      "description": "Serviceable Indian city with dynamic capacity and multiplier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 80 },
+        "slug": { "type": "string", "maxLength": 80 },
+        "state": { "type": "string", "maxLength": 80 },
+        "priceMultiplier": { "type": "number" },
+        "dailySlotCapacity": { "type": "number" },
+        "sameDayCutoffHour": { "type": "number" },
+        "blockedDatesJson": { "type": "string", "maxLength": 2000 },
+        "isEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "slug", "state", "priceMultiplier", "dailySlotCapacity", "sameDayCutoffHour", "isEnabled", "createdAt", "updatedAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Customer decoration booking order with real-time tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "orderNumber": { "type": "string", "maxLength": 40 },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "customerPhone": { "type": "string", "maxLength": 30 },
+        "customerEmail": { "type": "string", "maxLength": 160 },
+        "cityId": { "type": "string", "maxLength": 80 },
+        "cityName": { "type": "string", "maxLength": 80 },
+        "eventDate": { "type": "string", "maxLength": 20 },
+        "timeSlot": { "type": "string", "maxLength": 50 },
+        "venueAddress": { "type": "string", "maxLength": 600 },
+        "specialInstructions": { "type": "string", "maxLength": 1000 },
+        "selectedThemeColor": { "type": "string", "maxLength": 120 },
+        "itemsSummary": { "type": "string", "maxLength": 4000 },
+        "addOnsSummary": { "type": "string", "maxLength": 2500 },
+        "subtotal": { "type": "number" },
+        "discountAmount": { "type": "number" },
+        "couponCode": { "type": "string", "maxLength": 40 },
+        "totalAmount": { "type": "number" },
+        "paymentMode": { "type": "string", "enum": ["FULL", "ADVANCE"] },
+        "amountPaid": { "type": "number" },
+        "balanceDue": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["PENDING", "PARTIAL_VERIFIED", "PAID_VERIFIED", "REFUND_PROCESSING", "REFUNDED", "FAILED"] },
+        "razorpayOrderId": { "type": "string", "maxLength": 120 },
+        "razorpayPaymentId": { "type": "string", "maxLength": 120 },
+        "orderStatus": {
+          "type": "string",
+          "enum": [
+            "Pending Payment",
+            "Payment Received",
+            "Booking Confirmed",
+            "Decorator Assigned",
+            "Preparation Started",
+            "Decorator On The Way",
+            "Setup In Progress",
+            "Completed",
+            "Cancellation Requested",
+            "Cancelled",
+            "Refund Processing",
+            "Refunded"
+          ]
+        },
+        "assignedDecoratorId": { "type": "string", "maxLength": 128 },
+        "assignedDecoratorName": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "orderNumber",
+        "userId",
+        "customerName",
+        "customerPhone",
+        "customerEmail",
+        "cityId",
+        "cityName",
+        "eventDate",
+        "timeSlot",
+        "venueAddress",
+        "itemsSummary",
+        "subtotal",
+        "discountAmount",
+        "totalAmount",
+        "paymentMode",
+        "amountPaid",
+        "balanceDue",
+        "paymentStatus",
+        "orderStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Promotional discount code",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "code": { "type": "string", "maxLength": 40 },
+        "discountType": { "type": "string", "enum": ["PERCENTAGE", "FIXED"] },
+        "discountValue": { "type": "number" },
+        "minOrderValue": { "type": "number" },
+        "maxDiscount": { "type": "number" },
+        "expiryDate": { "type": "string", "maxLength": 40 },
+        "usageLimit": { "type": "number" },
+        "usedCount": { "type": "number" },
+        "isEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "code", "discountType", "discountValue", "minOrderValue", "expiryDate", "usageLimit", "usedCount", "isEnabled", "createdAt", "updatedAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Verified customer product review",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "productId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 100 },
+        "city": { "type": "string", "maxLength": 80 },
+        "occasion": { "type": "string", "maxLength": 80 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "productId", "userId", "userName", "city", "rating", "comment", "createdAt"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Customer cancellation, rescheduling, or support inquiry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userName": { "type": "string", "maxLength": 100 },
+        "userEmail": { "type": "string", "maxLength": 160 },
+        "orderNumber": { "type": "string", "maxLength": 40 },
+        "requestType": { "type": "string", "enum": ["GENERAL", "RESCHEDULE", "CANCELLATION", "PARTNER"] },
+        "subject": { "type": "string", "maxLength": 160 },
+        "message": { "type": "string", "maxLength": 1500 },
+        "status": { "type": "string", "enum": ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userName", "userEmail", "requestType", "subject", "message", "status", "createdAt", "updatedAt"]
+    },
+    "Decorator": {
+      "title": "Decorator",
+      "description": "Decoration specialist crew member",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "cityId": { "type": "string", "maxLength": 80 },
+        "cityName": { "type": "string", "maxLength": 80 },
+        "specialty": { "type": "string", "maxLength": 120 },
+        "rating": { "type": "number" },
+        "isAvailable": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "phone", "cityId", "cityName", "specialty", "rating", "isAvailable", "createdAt", "updatedAt"]
+    },
+    "WebsiteSetting": {
+      "title": "WebsiteSetting",
+      "description": "Global platform configuration and promotional settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "brandName": { "type": "string", "maxLength": 80 },
+        "announcementText": { "type": "string", "maxLength": 250 },
+        "supportPhone": { "type": "string", "maxLength": 30 },
+        "whatsappNumber": { "type": "string", "maxLength": 30 },
+        "supportEmail": { "type": "string", "maxLength": 160 },
+        "advancePercentage": { "type": "number" },
+        "allowAdvancePayment": { "type": "boolean" },
+        "cancellationPolicySummary": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "brandName", "announcementText", "supportPhone", "whatsappNumber", "supportEmail", "advancePercentage", "allowAdvancePayment", "cancellationPolicySummary", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Private customer profile documents strictly isolated to the owner or admin"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Trusted administrator lookup collection"
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Publicly readable decoration product catalog, writable only by admins"
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Publicly readable categories and subcategories, writable only by admins"
+    },
+    "/addOns/{addonId}": {
+      "schema": { "$ref": "#/entities/AddOn" },
+      "description": "Publicly readable celebration add-ons, writable only by admins"
+    },
+    "/cities/{cityId}": {
+      "schema": { "$ref": "#/entities/City" },
+      "description": "Publicly readable serviceable cities and slot capacities, writable only by admins"
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Customer bookings readable by the owning customer or admin"
+    },
+    "/coupons/{couponId}": {
+      "schema": { "$ref": "#/entities/Coupon" },
+      "description": "Discount coupons readable publicly for checkout validation, writable only by admins"
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Customer reviews readable publicly, creatable by verified signed-in users"
+    },
+    "/supportTickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/SupportTicket" },
+      "description": "Customer support, cancellation, and rescheduling requests isolated to owner or admin"
+    },
+    "/decorators/{decoratorId}": {
+      "schema": { "$ref": "#/entities/Decorator" },
+      "description": "Decorator crew directory readable and writable by admins"
+    },
+    "/websiteSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/WebsiteSetting" },
+      "description": "Global site settings readable publicly, writable only by admins"
+    }
+  }
+}
