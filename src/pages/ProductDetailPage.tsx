@@ -239,7 +239,7 @@ export const ProductDetailPage: React.FC = () => {
         : `${selectedCity.name} (Confirm exact house/flat address at checkout)`;
     const safeName =
       customerName.trim() || userProfile?.name || currentUser?.displayName || 'Celebration Host';
-    const safePhone = customerPhone.trim() || userProfile?.phone || '+91 9876543210';
+    const safePhone = customerPhone.trim() || userProfile?.phone || '+91 99835 62406';
 
     addToCart({
       productId: product.id,

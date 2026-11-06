@@ -486,10 +486,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     className="flex items-center justify-between p-2.5 hover:bg-[#FFF0F3]/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <img
+                      <SmartImage
                         src={item.primaryImage}
                         alt={item.title}
-                        referrerPolicy="no-referrer"
                         className="w-11 h-11 object-cover rounded-lg"
                       />
                       <div>
