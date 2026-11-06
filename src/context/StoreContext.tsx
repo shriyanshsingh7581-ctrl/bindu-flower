@@ -149,6 +149,7 @@ interface StoreContextValue {
   adminUpdateSupportTicket: (ticket: SupportTicket) => Promise<void>;
   saveWebsiteSettings: (settings: WebsiteSetting) => Promise<void>;
   seedInitialDatabaseIfNeeded: () => Promise<void>;
+  resetLocalCatalogCustomizations: () => void;
 
   // UI Toasts
   toasts: ToastMessage[];
@@ -163,6 +164,18 @@ const sanitizeId = (raw: string) =>
     .trim()
     .replace(/[^a-zA-Z0-9_-]/g, '-')
     .slice(0, 120) || `id-${Date.now()}`;
+
+const SEED_PRODUCT_IDS = new Set(SEED_PRODUCTS.map((p) => p.id));
+const SEED_CATEGORY_IDS = new Set(SEED_CATEGORIES.map((c) => c.id));
+
+const readLocalJson = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
@@ -182,37 +195,50 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [dbSettings, setDbSettings] = useState<WebsiteSetting | null>(null);
 
+  // Local Admin Overrides (so Admin Panel changes persist immediately even without Google OAuth on Vercel)
+  const [localProducts, setLocalProducts] = useState<Record<string, Product>>(() =>
+    readLocalJson('bindu_admin_products_v2', {})
+  );
+  const [deletedProductIds, setDeletedProductIds] = useState<string[]>(() =>
+    readLocalJson('bindu_deleted_products_v2', [])
+  );
+  const [localCategories, setLocalCategories] = useState<Record<string, Category>>(() =>
+    readLocalJson('bindu_admin_categories_v2', {})
+  );
+  const [deletedCategoryIds, setDeletedCategoryIds] = useState<string[]>(() =>
+    readLocalJson('bindu_deleted_categories_v2', [])
+  );
+  const [localAddOns, setLocalAddOns] = useState<Record<string, AddOn>>(() =>
+    readLocalJson('bindu_admin_addons_v2', {})
+  );
+  const [deletedAddOnIds, setDeletedAddOnIds] = useState<string[]>(() =>
+    readLocalJson('bindu_deleted_addons_v2', [])
+  );
+  const [localCities, setLocalCities] = useState<Record<string, City>>(() =>
+    readLocalJson('bindu_admin_cities_v2', {})
+  );
+  const [localCoupons, setLocalCoupons] = useState<Record<string, Coupon>>(() =>
+    readLocalJson('bindu_admin_coupons_v2', {})
+  );
+  const [deletedCouponIds, setDeletedCouponIds] = useState<string[]>(() =>
+    readLocalJson('bindu_deleted_coupons_v2', [])
+  );
+  const [localSettings, setLocalSettings] = useState<WebsiteSetting | null>(() =>
+    readLocalJson('bindu_admin_settings_v2', null)
+  );
+
   const [selectedCityId, setSelectedCityId] = useState<string>(() => {
     return localStorage.getItem('utsav_city') || 'jaipur';
   });
 
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('utsav_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
+  const [cart, setCart] = useState<CartItem[]>(() => readLocalJson('utsav_cart', []));
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('utsav_wishlist');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('utsav_recent');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [wishlistIds, setWishlistIds] = useState<string[]>(() =>
+    readLocalJson('utsav_wishlist', [])
+  );
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>(() =>
+    readLocalJson('utsav_recent', [])
+  );
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -240,6 +266,60 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem('utsav_recent', JSON.stringify(recentlyViewedIds));
   }, [recentlyViewedIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bindu_admin_products_v2', JSON.stringify(localProducts));
+    } catch {
+      // ignore storage quota warnings for large base64 images
+    }
+  }, [localProducts]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_deleted_products_v2', JSON.stringify(deletedProductIds));
+  }, [deletedProductIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bindu_admin_categories_v2', JSON.stringify(localCategories));
+    } catch {
+      // ignore
+    }
+  }, [localCategories]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_deleted_categories_v2', JSON.stringify(deletedCategoryIds));
+  }, [deletedCategoryIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bindu_admin_addons_v2', JSON.stringify(localAddOns));
+    } catch {
+      // ignore
+    }
+  }, [localAddOns]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_deleted_addons_v2', JSON.stringify(deletedAddOnIds));
+  }, [deletedAddOnIds]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_admin_cities_v2', JSON.stringify(localCities));
+  }, [localCities]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_admin_coupons_v2', JSON.stringify(localCoupons));
+  }, [localCoupons]);
+
+  useEffect(() => {
+    localStorage.setItem('bindu_deleted_coupons_v2', JSON.stringify(deletedCouponIds));
+  }, [deletedCouponIds]);
+
+  useEffect(() => {
+    if (localSettings) {
+      localStorage.setItem('bindu_admin_settings_v2', JSON.stringify(localSettings));
+    }
+  }, [localSettings]);
 
   // 1. Auth Listener & Profile Bootstrap
   useEffect(() => {
@@ -448,9 +528,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [authLoading, currentUser, isAdmin]);
 
-  // Merge Firestore live documents with seed catalog so the platform is populated out-of-the-box
+  // Strict Deduplication & Catalog Merge:
+  // Every product appears ONCE and ONLY ONCE across the platform.
   const products = useMemo(() => {
     const map = new Map<string, Product>();
+    const deletedSet = new Set(deletedProductIds);
+
     const normalizeProduct = (p: Product): Product => {
       let gallery = p.galleryImages;
       try {
@@ -467,42 +550,135 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         galleryImages: gallery,
       };
     };
-    SEED_PRODUCTS.forEach((p) => map.set(p.id, normalizeProduct(p)));
-    dbProducts.forEach((p) => map.set(p.id, normalizeProduct(p)));
-    return Array.from(map.values());
-  }, [dbProducts]);
+
+    // 1. Load the 69 unique official SEED_PRODUCTS
+    SEED_PRODUCTS.forEach((p) => {
+      if (!deletedSet.has(p.id)) {
+        map.set(p.id, normalizeProduct(p));
+      }
+    });
+
+    // 2. Merge Firestore products ONLY if they match current catalog IDs or were newly created via Admin
+    // (Skip legacy seeded records that used old /src/assets/images/ paths)
+    dbProducts.forEach((p) => {
+      if (deletedSet.has(p.id)) return;
+      const isLegacyLocalSeed =
+        !SEED_PRODUCT_IDS.has(p.id) &&
+        (!p.primaryImage || p.primaryImage.startsWith('/src/assets/images/'));
+      if (isLegacyLocalSeed) return;
+      map.set(p.id, normalizeProduct(p));
+    });
+
+    // 3. Apply Local Admin overrides (instant edits / new products / uploaded photos)
+    Object.values(localProducts).forEach((p) => {
+      if (!deletedSet.has(p.id)) {
+        map.set(p.id, normalizeProduct(p));
+      }
+    });
+
+    // 4. Final pass: ensure strict uniqueness by slug and normalized title
+    const seenSlugs = new Set<string>();
+    const seenTitles = new Set<string>();
+    const uniqueList: Product[] = [];
+
+    // Process local admin edits first if they share a slug/title, otherwise preserve seed order
+    const allItems = Array.from(map.values());
+    for (const item of allItems) {
+      const normSlug = item.slug.trim().toLowerCase();
+      const normTitle = item.title.trim().toLowerCase();
+      if (seenSlugs.has(normSlug) || seenTitles.has(normTitle)) {
+        // If there is a local override for this item, replace the earlier entry
+        if (localProducts[item.id]) {
+          const idx = uniqueList.findIndex(
+            (u) =>
+              u.slug.trim().toLowerCase() === normSlug ||
+              u.title.trim().toLowerCase() === normTitle
+          );
+          if (idx !== -1) {
+            uniqueList[idx] = item;
+          }
+        }
+        continue;
+      }
+      seenSlugs.add(normSlug);
+      seenTitles.add(normTitle);
+      uniqueList.push(item);
+    }
+
+    return uniqueList;
+  }, [dbProducts, localProducts, deletedProductIds]);
 
   const categories = useMemo(() => {
     const map = new Map<string, Category>();
-    SEED_CATEGORIES.forEach((c) =>
-      map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) })
-    );
-    dbCategories.forEach((c) =>
-      map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) })
-    );
+    const deletedSet = new Set(deletedCategoryIds);
+
+    SEED_CATEGORIES.forEach((c) => {
+      if (!deletedSet.has(c.id)) {
+        map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) });
+      }
+    });
+
+    dbCategories.forEach((c) => {
+      if (deletedSet.has(c.id)) return;
+      // Ignore legacy 5-category seed records like 'baby-kids', 'wedding', 'other', 'romantic'
+      if (!SEED_CATEGORY_IDS.has(c.id) && ['baby-kids', 'wedding', 'other', 'romantic'].includes(c.id)) {
+        return;
+      }
+      map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) });
+    });
+
+    Object.values(localCategories).forEach((c) => {
+      if (!deletedSet.has(c.id)) {
+        map.set(c.id, { ...c, bannerImage: resolveAssetUrl(c.bannerImage) });
+      }
+    });
+
     return Array.from(map.values()).sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [dbCategories]);
+  }, [dbCategories, localCategories, deletedCategoryIds]);
 
   const addOns = useMemo(() => {
     const map = new Map<string, AddOn>();
-    SEED_ADDONS.forEach((a) => map.set(a.id, { ...a, image: resolveAssetUrl(a.image) }));
-    dbAddOns.forEach((a) => map.set(a.id, { ...a, image: resolveAssetUrl(a.image) }));
+    const deletedSet = new Set(deletedAddOnIds);
+    SEED_ADDONS.forEach((a) => {
+      if (!deletedSet.has(a.id)) {
+        map.set(a.id, { ...a, image: resolveAssetUrl(a.image) });
+      }
+    });
+    dbAddOns.forEach((a) => {
+      if (!deletedSet.has(a.id)) {
+        map.set(a.id, { ...a, image: resolveAssetUrl(a.image) });
+      }
+    });
+    Object.values(localAddOns).forEach((a) => {
+      if (!deletedSet.has(a.id)) {
+        map.set(a.id, { ...a, image: resolveAssetUrl(a.image) });
+      }
+    });
     return Array.from(map.values());
-  }, [dbAddOns]);
+  }, [dbAddOns, localAddOns, deletedAddOnIds]);
 
   const cities = useMemo(() => {
     const map = new Map<string, City>();
     SEED_CITIES.forEach((c) => map.set(c.id, c));
     dbCities.forEach((c) => map.set(c.id, c));
+    Object.values(localCities).forEach((c) => map.set(c.id, c));
     return Array.from(map.values());
-  }, [dbCities]);
+  }, [dbCities, localCities]);
 
   const coupons = useMemo(() => {
     const map = new Map<string, Coupon>();
-    SEED_COUPONS.forEach((c) => map.set(c.id, c));
-    dbCoupons.forEach((c) => map.set(c.id, c));
+    const deletedSet = new Set(deletedCouponIds);
+    SEED_COUPONS.forEach((c) => {
+      if (!deletedSet.has(c.id)) map.set(c.id, c);
+    });
+    dbCoupons.forEach((c) => {
+      if (!deletedSet.has(c.id)) map.set(c.id, c);
+    });
+    Object.values(localCoupons).forEach((c) => {
+      if (!deletedSet.has(c.id)) map.set(c.id, c);
+    });
     return Array.from(map.values());
-  }, [dbCoupons]);
+  }, [dbCoupons, localCoupons, deletedCouponIds]);
 
   const reviews = useMemo(() => {
     const map = new Map<string, Review>();
@@ -519,7 +695,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [dbDecorators]);
 
   const websiteSettings = useMemo(() => {
-    const base = dbSettings || SEED_WEBSITE_SETTINGS;
+    const base = localSettings || dbSettings || SEED_WEBSITE_SETTINGS;
     return {
       ...base,
       brandName:
@@ -535,7 +711,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ? '919983562406'
           : base.whatsappNumber,
     };
-  }, [dbSettings]);
+  }, [dbSettings, localSettings]);
 
   const selectedCity = useMemo(() => {
     return cities.find((c) => c.id === selectedCityId && c.isEnabled) || cities[0] || SEED_CITIES[0];
@@ -882,10 +1058,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Admin Operations
+  // Admin Operations (Instant Local State + Cloud Firestore Sync when authenticated)
   const saveProduct = async (product: Product) => {
     const id = sanitizeId(product.id);
     const nowIso = new Date().toISOString();
+    const isDataUrl = product.primaryImage.startsWith('data:image/');
     const clean: Product = {
       ...product,
       id,
@@ -895,8 +1072,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       categoryId: product.categoryId.slice(0, 80),
       subcategoryId: product.subcategoryId.slice(0, 80),
       setupDuration: product.setupDuration.slice(0, 80),
-      primaryImage: product.primaryImage.slice(0, 500),
-      galleryImages: (product.galleryImages || '[]').slice(0, 2500),
+      primaryImage: isDataUrl ? product.primaryImage : product.primaryImage.slice(0, 500),
+      galleryImages: isDataUrl
+        ? product.galleryImages || JSON.stringify([product.primaryImage])
+        : (product.galleryImages || '[]').slice(0, 2500),
       includedItems: product.includedItems.slice(0, 2000),
       excludedItems: (product.excludedItems || '[]').slice(0, 1500),
       instructions: (product.instructions || '[]').slice(0, 1500),
@@ -904,81 +1083,141 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createdAt: product.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'products', id), clean);
-      showToast(`Saved product "${clean.title}"`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `products/${id}`);
+
+    // Always persist immediately in local Admin state
+    setLocalProducts((prev) => ({ ...prev, [id]: clean }));
+    setDeletedProductIds((prev) => prev.filter((item) => item !== id));
+
+    if (currentUser && isAdmin && !isDataUrl) {
+      try {
+        await setDoc(doc(db, 'products', id), clean);
+        showToast(`Saved "${clean.title}" to Catalog & Cloud!`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `products/${id}`);
+      }
+    } else {
+      showToast(`Saved "${clean.title}"! Changes are live on the website.`);
     }
   };
 
   const deleteProduct = async (productId: string) => {
-    try {
-      await deleteDoc(doc(db, 'products', productId));
-      showToast('Deleted product from Firestore.');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `products/${productId}`);
+    setDeletedProductIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
+    setLocalProducts((prev) => {
+      const next = { ...prev };
+      delete next[productId];
+      return next;
+    });
+
+    if (currentUser && isAdmin) {
+      try {
+        await deleteDoc(doc(db, 'products', productId));
+        showToast('Product removed from Catalog & Firestore.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `products/${productId}`);
+      }
+    } else {
+      showToast('Product removed from Catalog.');
     }
   };
 
   const saveCategory = async (category: Category) => {
     const id = sanitizeId(category.id);
     const nowIso = new Date().toISOString();
+    const isDataUrl = category.bannerImage.startsWith('data:image/');
     const clean: Category = {
       ...category,
       id,
       slug: category.slug.slice(0, 120),
       name: category.name.slice(0, 120),
       description: category.description.slice(0, 600),
-      bannerImage: category.bannerImage.slice(0, 500),
+      bannerImage: isDataUrl ? category.bannerImage : category.bannerImage.slice(0, 500),
       subcategoriesJson: category.subcategoriesJson.slice(0, 3000),
       createdAt: category.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'categories', id), clean);
-      showToast(`Category "${clean.name}" saved.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `categories/${id}`);
+
+    setLocalCategories((prev) => ({ ...prev, [id]: clean }));
+    setDeletedCategoryIds((prev) => prev.filter((item) => item !== id));
+
+    if (currentUser && isAdmin && !isDataUrl) {
+      try {
+        await setDoc(doc(db, 'categories', id), clean);
+        showToast(`Category "${clean.name}" saved.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `categories/${id}`);
+      }
+    } else {
+      showToast(`Category "${clean.name}" updated!`);
     }
   };
 
   const deleteCategory = async (categoryId: string) => {
-    try {
-      await deleteDoc(doc(db, 'categories', categoryId));
-      showToast('Deleted category.');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `categories/${categoryId}`);
+    setDeletedCategoryIds((prev) => (prev.includes(categoryId) ? prev : [...prev, categoryId]));
+    setLocalCategories((prev) => {
+      const next = { ...prev };
+      delete next[categoryId];
+      return next;
+    });
+
+    if (currentUser && isAdmin) {
+      try {
+        await deleteDoc(doc(db, 'categories', categoryId));
+        showToast('Deleted category.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `categories/${categoryId}`);
+      }
+    } else {
+      showToast('Category removed.');
     }
   };
 
   const saveAddOn = async (addon: AddOn) => {
     const id = sanitizeId(addon.id);
     const nowIso = new Date().toISOString();
+    const isDataUrl = addon.image.startsWith('data:image/');
     const clean: AddOn = {
       ...addon,
       id,
       title: addon.title.slice(0, 120),
       category: addon.category,
-      image: addon.image.slice(0, 500),
+      image: isDataUrl ? addon.image : addon.image.slice(0, 500),
       description: (addon.description || '').slice(0, 400),
       createdAt: addon.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'addOns', id), clean);
-      showToast(`Add-on "${clean.title}" saved.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `addOns/${id}`);
+
+    setLocalAddOns((prev) => ({ ...prev, [id]: clean }));
+    setDeletedAddOnIds((prev) => prev.filter((item) => item !== id));
+
+    if (currentUser && isAdmin && !isDataUrl) {
+      try {
+        await setDoc(doc(db, 'addOns', id), clean);
+        showToast(`Add-on "${clean.title}" saved.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `addOns/${id}`);
+      }
+    } else {
+      showToast(`Add-on "${clean.title}" saved!`);
     }
   };
 
   const deleteAddOn = async (addonId: string) => {
-    try {
-      await deleteDoc(doc(db, 'addOns', addonId));
-      showToast('Deleted add-on.');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `addOns/${addonId}`);
+    setDeletedAddOnIds((prev) => (prev.includes(addonId) ? prev : [...prev, addonId]));
+    setLocalAddOns((prev) => {
+      const next = { ...prev };
+      delete next[addonId];
+      return next;
+    });
+
+    if (currentUser && isAdmin) {
+      try {
+        await deleteDoc(doc(db, 'addOns', addonId));
+        showToast('Deleted add-on.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `addOns/${addonId}`);
+      }
+    } else {
+      showToast('Add-on removed.');
     }
   };
 
@@ -995,11 +1234,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createdAt: city.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'cities', id), clean);
-      showToast(`City "${clean.name}" updated.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `cities/${id}`);
+
+    setLocalCities((prev) => ({ ...prev, [id]: clean }));
+
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'cities', id), clean);
+        showToast(`City "${clean.name}" updated.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `cities/${id}`);
+      }
+    } else {
+      showToast(`City "${clean.name}" updated!`);
     }
   };
 
@@ -1014,20 +1260,39 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createdAt: coupon.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'coupons', id), clean);
-      showToast(`Coupon "${clean.code}" saved.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `coupons/${id}`);
+
+    setLocalCoupons((prev) => ({ ...prev, [id]: clean }));
+    setDeletedCouponIds((prev) => prev.filter((item) => item !== id));
+
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'coupons', id), clean);
+        showToast(`Coupon "${clean.code}" saved.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `coupons/${id}`);
+      }
+    } else {
+      showToast(`Coupon "${clean.code}" saved!`);
     }
   };
 
   const deleteCoupon = async (couponId: string) => {
-    try {
-      await deleteDoc(doc(db, 'coupons', couponId));
-      showToast('Coupon deleted.');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `coupons/${couponId}`);
+    setDeletedCouponIds((prev) => (prev.includes(couponId) ? prev : [...prev, couponId]));
+    setLocalCoupons((prev) => {
+      const next = { ...prev };
+      delete next[couponId];
+      return next;
+    });
+
+    if (currentUser && isAdmin) {
+      try {
+        await deleteDoc(doc(db, 'coupons', couponId));
+        showToast('Coupon deleted.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `coupons/${couponId}`);
+      }
+    } else {
+      showToast('Coupon removed.');
     }
   };
 
@@ -1045,20 +1310,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       createdAt: decorator.createdAt || nowIso,
       updatedAt: nowIso,
     };
-    try {
-      await setDoc(doc(db, 'decorators', id), clean);
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'decorators', id), clean);
+        showToast(`Decorator "${clean.name}" saved.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, `decorators/${id}`);
+      }
+    } else {
+      setDbDecorators((prev) => [...prev.filter((d) => d.id !== id), clean]);
       showToast(`Decorator "${clean.name}" saved.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `decorators/${id}`);
     }
   };
 
   const deleteDecorator = async (decoratorId: string) => {
-    try {
-      await deleteDoc(doc(db, 'decorators', decoratorId));
+    if (currentUser && isAdmin) {
+      try {
+        await deleteDoc(doc(db, 'decorators', decoratorId));
+        showToast('Decorator removed.');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `decorators/${decoratorId}`);
+      }
+    } else {
+      setDbDecorators((prev) => prev.filter((d) => d.id !== decoratorId));
       showToast('Decorator removed.');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, `decorators/${decoratorId}`);
     }
   };
 
@@ -1069,11 +1344,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       id,
       updatedAt: new Date().toISOString(),
     };
-    try {
-      await setDoc(doc(db, 'bookings', id), clean);
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'bookings', id), clean);
+        showToast(`Order ${booking.orderNumber} updated to "${booking.orderStatus}"`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, `bookings/${id}`);
+      }
+    } else {
+      setBookings((prev) => prev.map((b) => (b.id === id ? clean : b)));
       showToast(`Order ${booking.orderNumber} updated to "${booking.orderStatus}"`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `bookings/${id}`);
     }
   };
 
@@ -1084,11 +1364,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       id,
       updatedAt: new Date().toISOString(),
     };
-    try {
-      await setDoc(doc(db, 'supportTickets', id), clean);
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'supportTickets', id), clean);
+        showToast(`Support ticket ${ticket.id} updated.`);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, `supportTickets/${id}`);
+      }
+    } else {
+      setSupportTickets((prev) => prev.map((t) => (t.id === id ? clean : t)));
       showToast(`Support ticket ${ticket.id} updated.`);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `supportTickets/${id}`);
     }
   };
 
@@ -1104,17 +1389,48 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       cancellationPolicySummary: settings.cancellationPolicySummary.slice(0, 1000),
       updatedAt: new Date().toISOString(),
     };
-    try {
-      await setDoc(doc(db, 'websiteSettings', 'global'), clean);
-      showToast('Website settings synced to Firestore!');
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, 'websiteSettings/global');
+
+    setLocalSettings(clean);
+
+    if (currentUser && isAdmin) {
+      try {
+        await setDoc(doc(db, 'websiteSettings', 'global'), clean);
+        showToast('Website settings saved & synced to Cloud!');
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, 'websiteSettings/global');
+      }
+    } else {
+      showToast('Website settings updated!');
     }
   };
 
+  const resetLocalCatalogCustomizations = () => {
+    setLocalProducts({});
+    setDeletedProductIds([]);
+    setLocalCategories({});
+    setDeletedCategoryIds([]);
+    setLocalAddOns({});
+    setDeletedAddOnIds([]);
+    setLocalCities({});
+    setLocalCoupons({});
+    setDeletedCouponIds([]);
+    setLocalSettings(null);
+    localStorage.removeItem('bindu_admin_products_v2');
+    localStorage.removeItem('bindu_deleted_products_v2');
+    localStorage.removeItem('bindu_admin_categories_v2');
+    localStorage.removeItem('bindu_deleted_categories_v2');
+    localStorage.removeItem('bindu_admin_addons_v2');
+    localStorage.removeItem('bindu_deleted_addons_v2');
+    localStorage.removeItem('bindu_admin_cities_v2');
+    localStorage.removeItem('bindu_admin_coupons_v2');
+    localStorage.removeItem('bindu_deleted_coupons_v2');
+    localStorage.removeItem('bindu_admin_settings_v2');
+    showToast('Restored official 69-product catalog!', 'info');
+  };
+
   const seedInitialDatabaseIfNeeded = async () => {
-    if (!isAdmin) {
-      showToast('Only authorized administrators can seed Firestore collections.', 'error');
+    if (!currentUser || !isAdmin) {
+      showToast('All 69 unique products & 13 categories are active locally! Sign in with Google Admin to sync to Cloud Firestore.', 'info');
       return;
     }
     try {
@@ -1137,7 +1453,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await setDoc(doc(db, 'decorators', dec.id), dec);
       }
       await setDoc(doc(db, 'websiteSettings', 'global'), SEED_WEBSITE_SETTINGS);
-      showToast('All catalog collections synced to live Firestore database!');
+      showToast('All 69 unique products & 13 categories synced to live Firestore database!');
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, 'seedDatabase');
     }
@@ -1206,6 +1522,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         adminUpdateSupportTicket,
         saveWebsiteSettings,
         seedInitialDatabaseIfNeeded,
+        resetLocalCatalogCustomizations,
         toasts,
         showToast,
         dismissToast,

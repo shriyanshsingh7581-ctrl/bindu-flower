@@ -12,181 +12,160 @@ export const HomePage: React.FC = () => {
 
   const enabledProducts = products.filter((p) => p.isEnabled);
 
-  // Exact product slices matching every section in the BalloonDekor video
-  const birthdayProducts = enabledProducts
-    .filter((p) => p.categoryId === 'birthday')
-    .slice(0, 4);
+  // Strict category-by-category deduplication so no product ever appears twice on the homepage
+  const usedIds = new Set<string>();
+  const takeUniqueByCategory = (categoryId: string, limit = 4) => {
+    const list = enabledProducts.filter(
+      (p) => p.categoryId === categoryId && !usedIds.has(p.id)
+    );
+    const slice = list.slice(0, limit);
+    slice.forEach((p) => usedIds.add(p.id));
+    return slice;
+  };
 
-  const halloweenProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'halloween')
-    .slice(0, 4);
+  const birthdayProducts = takeUniqueByCategory('birthday', 5);
+  const kidsThemeProducts = takeUniqueByCategory('kids-themes', 4);
+  const halloweenProducts = takeUniqueByCategory('halloween-decor', 4);
+  const anniversaryProducts = takeUniqueByCategory('anniversary', 5);
+  const welcomeBabyProducts = takeUniqueByCategory('newborn-welcome', 5);
+  const babyShowerProducts = takeUniqueByCategory('baby-shower', 5);
+  const balloonHamperProducts = takeUniqueByCategory('balloon-bouquets', 5);
+  const bacheloretteProducts = takeUniqueByCategory('bachelorette', 5);
+  const weddingCarProducts = takeUniqueByCategory('car-decoration', 5);
+  const shopAndOfficeProducts = takeUniqueByCategory('corporate-events', 5);
+  const weddingHaldiProducts = takeUniqueByCategory('wedding-suit', 4);
+  const diwaliAndBinduProducts = takeUniqueByCategory('festive-special', 5);
+  const canopyProposalProducts = takeUniqueByCategory('romantic-surprises', 4);
 
-  const anniversaryProducts = enabledProducts
-    .filter((p) => p.categoryId === 'anniversary' || p.categoryId === 'romantic')
-    .slice(0, 4);
-
-  const welcomeBabyProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'newborn-welcome')
-    .slice(0, 4);
-
-  const babyShowerProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'baby-shower')
-    .slice(0, 4);
-
-  const balloonHamperProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'balloon-bouquets')
-    .slice(0, 4);
-
-  const bacheloretteProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'bachelorette')
-    .slice(0, 4);
-
-  const weddingCarProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'wedding-car' || p.subcategoryId === 'car-boot')
-    .slice(0, 4);
-
-  const shopAndOfficeProducts = enabledProducts
-    .filter((p) => p.subcategoryId === 'shop-opening' || p.subcategoryId === 'corporate')
-    .slice(0, 4);
-
-  const diwaliAndBinduProducts = enabledProducts
-    .filter(
-      (p) =>
-        p.subcategoryId === 'diwali' ||
-        p.subcategoryId === 'bindu-flower-decor' ||
-        p.subcategoryId === 'haldi'
-    )
-    .slice(0, 4);
-
-  // 8 Main Service Cards (Video 00:03 - 00:04)
+  // 8 Main Service Cards (Exact BalloonDekor CDN Images)
   const topServiceCards = [
     {
       label: 'Birthday Decoration',
       to: '/collections/birthday',
       bg: 'bg-[#FDEBF0]',
-      img: ASSET_MANIFEST.birthdayRoseGold,
+      img: 'https://cdn.balloondekor.com/33/birthday-decoration-d67f374a-0151-409d-96ea-36e9527e0ffc.webp',
     },
     {
       label: 'Kids Party Decoration',
       to: '/collections/kids-themes',
       bg: 'bg-[#E6F4FE]',
-      img: ASSET_MANIFEST.kidsTheme,
+      img: 'https://cdn.balloondekor.com/33/kids-birthday-decoration-4b6bce2b-e65d-40fa-bdea-3f1367688305.webp',
     },
     {
       label: 'Newborn Welcome',
-      to: '/collections/baby-kids?sub=newborn-welcome',
+      to: '/collections/newborn-welcome',
       bg: 'bg-[#FCEEE9]',
-      img: ASSET_MANIFEST.welcomeBabyRing,
+      img: 'https://cdn.balloondekor.com/33/newborn-welcome.webp',
     },
     {
       label: 'Baby Shower Decor',
-      to: '/collections/baby-kids?sub=baby-shower',
+      to: '/collections/baby-shower',
       bg: 'bg-[#F3EDFC]',
-      img: ASSET_MANIFEST.babyShower,
+      img: 'https://cdn.balloondekor.com/33/baby-shower-decoration-1ba3a3a3-d2eb-40e6-98bd-aed4eb907984.webp',
     },
     {
       label: 'Wedding Decorations',
-      to: '/collections/wedding',
+      to: '/collections/wedding-suit',
       bg: 'bg-[#FEF7E0]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/33/wedding-decoration-0c8b0952-fe10-44cb-ac91-8f640239beaf.webp',
     },
     {
       label: 'Corporate Events',
-      to: '/collections/other?sub=shop-opening',
+      to: '/collections/corporate-events',
       bg: 'bg-[#E8F4FE]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/33/office-decoration-b84c3312-f4cd-4baf-8d1f-b03d28c61242.webp',
     },
     {
       label: 'Halloween Decor',
-      to: '/collections/other?sub=halloween',
+      to: '/collections/halloween-decor',
       bg: 'bg-[#FDF0E6]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/22/haloween-category-image.webp',
     },
     {
       label: 'Diwali Decor',
-      to: '/collections/other?sub=diwali',
+      to: '/collections/festive-special',
       bg: 'bg-[#FEF4DC]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/22/diwali-decor.webp',
     },
   ];
 
-  // 6 Kids Birthday Theme Cards (Video 00:19, 00:26 - 00:27)
+  // 6 Kids Birthday Theme Cards (Exact BalloonDekor CDN Images)
   const kidsThemeCards = [
     {
       label: 'Cocomelon',
-      to: '/product/cocomelon-kids-birthday-decoration',
+      to: '/collections/kids-themes?sub=cocomelon-theme',
       bg: 'bg-[#FFF5F5]',
-      img: ASSET_MANIFEST.kidsTheme,
+      img: 'https://cdn.balloondekor.com/images/33/dbe87a70-56bc-42bc-ad96-2847b88c00dd.webp',
     },
     {
       label: 'Baby Shark',
-      to: '/product/baby-shark-kids-birthday-decoration',
+      to: '/collections/kids-themes?sub=baby-shark',
       bg: 'bg-[#F0F8FF]',
-      img: ASSET_MANIFEST.welcomeBabyRing,
+      img: 'https://cdn.balloondekor.com/images/33/63f93c9c-e24f-483c-88bb-b7352cfd564b.webp',
     },
     {
       label: 'Boss Baby',
-      to: '/product/boss-baby-kids-birthday-decoration',
+      to: '/collections/kids-themes?sub=boss-baby',
       bg: 'bg-[#F4F6F9]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/images/33/509c9e90-fa70-4e5b-bfa0-dd873fc0919e.webp',
     },
     {
       label: 'Jungle Theme',
-      to: '/product/wild-one-jungle-safari-theme-kids-birthday-decor',
+      to: '/collections/kids-themes?sub=jungle-safari',
       bg: 'bg-[#F1F8E9]',
-      img: ASSET_MANIFEST.jungleSafariKids,
+      img: 'https://cdn.balloondekor.com/images/33/c9f48859-63fc-4ba5-93b9-63349a3097b0.webp',
     },
     {
       label: 'Frozen Theme',
-      to: '/product/frozen-theme-kids-birthday-decoration',
+      to: '/collections/kids-themes?sub=frozen-princess',
       bg: 'bg-[#EBF8FF]',
-      img: ASSET_MANIFEST.kidsTheme,
+      img: 'https://cdn.balloondekor.com/images/33/06dd1bb3-1a5a-470c-9d5f-7936b7b46dd4.webp',
     },
     {
       label: 'Mermaid Theme',
-      to: '/product/mermaid-and-unicorn-pastel-theme-decor',
+      to: '/collections/kids-themes?sub=mermaid-theme',
       bg: 'bg-[#FDF2F8]',
-      img: ASSET_MANIFEST.babyShower,
+      img: 'https://cdn.balloondekor.com/images/33/38815dea-d5cd-4fca-b521-4d4b4574a2a9.webp',
     },
   ];
 
-  // 6 Wedding Collection Cards: "From Haldi to Honeymoon" (Video 00:29 - 00:30)
+  // 6 Wedding Collection Cards: "From Haldi to Honeymoon" (Exact BalloonDekor CDN Images)
   const weddingCollectionCards = [
     {
       label: 'Bridal Shower',
-      to: '/collections/wedding?sub=bachelorette',
+      to: '/collections/bachelorette',
       bg: 'bg-[#FFF0F3]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/33/bachelorette-decoration-83f7bd3a-a52d-4755-b8a5-4b6d3126f5e0.webp',
     },
     {
       label: 'Haldi Decor',
-      to: '/collections/wedding?sub=haldi',
+      to: '/collections/wedding-suit?sub=haldi-mehndi',
       bg: 'bg-[#FFF3F5]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/33/haldi-decoration-92abeb45-8776-4485-8300-d177622d3c40.webp',
     },
     {
       label: 'Mehndi Decor',
-      to: '/collections/wedding?sub=mehndi',
+      to: '/collections/wedding-suit?sub=haldi-mehndi',
       bg: 'bg-[#FFF0F3]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/33/mehndi-decoration-fe86e95f-b9dc-4653-ad7c-239e4d71d5b2.webp',
     },
     {
       label: 'Wedding Car',
-      to: '/collections/wedding?sub=wedding-car',
+      to: '/collections/car-decoration',
       bg: 'bg-[#FFF0F3]',
-      img: ASSET_MANIFEST.carBootSurprise,
+      img: 'https://cdn.balloondekor.com/33/wedding-car-decoration-f5faedd9-d4b3-4072-8633-ab69c9522db0.webp',
     },
     {
       label: 'Bride Welcome',
-      to: '/collections/wedding?sub=bride-welcome',
+      to: '/collections/wedding-suit?sub=bride-welcome',
       bg: 'bg-[#FFF0F3]',
-      img: ASSET_MANIFEST.romanticRedRoom,
+      img: 'https://cdn.balloondekor.com/33/bride-welcome-decoration-771ccd3d-934d-4ff6-a85c-cadd6ff3abbb.webp',
     },
     {
       label: 'First Night',
-      to: '/collections/wedding?sub=first-night',
+      to: '/collections/wedding-suit?sub=first-night',
       bg: 'bg-[#FFF0F3]',
-      img: ASSET_MANIFEST.romanticAnniversary,
+      img: 'https://cdn.balloondekor.com/33/first-night-decoration-a5cbe99a-b753-48ea-944f-3df3018988e0.webp',
     },
   ];
 
@@ -220,7 +199,7 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 space-y-9">
-      {/* 1. Festive Diwali Hero Banner Card (Exact Match to Video 00:01 - 00:03) */}
+      {/* 1. Festive Diwali Hero Banner Card */}
       <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#FDF5E6] via-[#FCEBD2] to-[#FAD8B4] border border-[#E6C594]/60 shadow-xs">
         {/* Decorative Marigold Garland Toran Strip at Top */}
         <div
@@ -249,7 +228,7 @@ export const HomePage: React.FC = () => {
             </p>
             <div className="pt-2">
               <Link
-                to="/collections/other?sub=diwali"
+                to="/collections/festive-special"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#C82333] text-white text-xs sm:text-sm font-bold hover:bg-[#a71d2a] transition-colors shadow-sm"
               >
                 <span>Explore Diwali decor</span>
@@ -262,7 +241,7 @@ export const HomePage: React.FC = () => {
           <div className="lg:col-span-5 flex items-center justify-end">
             <div className="relative w-full max-w-xs sm:max-w-sm aspect-[16/10] rounded-2xl overflow-hidden border-2 border-[#D97706]/30 shadow-md">
               <SmartImage
-                src={ASSET_MANIFEST.weddingHaldi}
+                src="https://cdn.balloondekor.com/76/traditional-diwali-home-decoration.webp"
                 alt="Festive Diwali Marigold & Diya Decoration"
                 className="w-full h-full object-cover"
               />
@@ -276,7 +255,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. "Professional Balloon Decoration Services..." + 8-Item Pastel Category Grid (Video 00:03 - 00:04) */}
+      {/* 2. "Professional Balloon Decoration Services..." + 8-Item Pastel Category Grid */}
       <section className="space-y-4">
         <div className="flex items-start gap-2.5">
           <span className="w-1 h-10 sm:h-11 rounded-full bg-[#D8315B] shrink-0 mt-0.5" />
@@ -314,87 +293,46 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Promotional Banner: "Kids' Birthday Decorations - Starts at ₹1,499" (Video 00:04 - 00:05) */}
-      <section className="rounded-3xl overflow-hidden bg-gradient-to-r from-[#FFF0F3] via-[#FDE2E8] to-[#FAD1DC] border border-[#D8315B]/15 p-5 sm:p-8 grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-7 sm:col-span-7 space-y-1.5 sm:space-y-2.5">
-          <span className="text-xs font-extrabold text-[#D8315B] lowercase">
-            {websiteSettings.brandName}
-          </span>
-          <h3 className="text-lg sm:text-3xl font-extrabold text-[#1C1618] leading-tight">
-            Kids’ Birthday
-            <br />
-            Decorations
-          </h3>
-          <p className="text-xs sm:text-sm font-bold text-[#1C1618]">Starts at ₹1,499</p>
-          <div className="pt-1">
-            <Link
-              to="/collections/kids-themes"
-              className="inline-block px-4 py-2 rounded-lg bg-[#D8315B] text-white text-xs font-bold hover:bg-[#b8254a] transition-colors"
-            >
-              Explore Now
-            </Link>
-          </div>
-        </div>
-        <div className="col-span-5 sm:col-span-5">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-white/60 shadow-sm">
-            <SmartImage
-              src={ASSET_MANIFEST.kidsTheme}
-              alt="Kids Birthday Decorations Starts at ₹1,499"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+      {/* 3. Official Promotional Banner: Kids' Birthday Decorations */}
+      <section>
+        <Link
+          to="/collections/kids-themes"
+          className="block rounded-3xl overflow-hidden border border-[#1C1618]/8 shadow-xs hover:shadow-md transition-shadow"
+        >
+          <SmartImage
+            src={ASSET_MANIFEST.kidsBirthdayBanner}
+            alt="Kids' Birthday Decorations — Starts at ₹1,499"
+            className="w-full h-auto object-cover"
+          />
+        </Link>
       </section>
 
-      {/* 4. Birthday Decoration Section (Video 00:05 - 00:08) */}
+      {/* 4. Birthday Decoration Section (Category: birthday) */}
       <section>
         <SectionHeading title="Birthday Decoration" viewAllLink="/collections/birthday" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {birthdayProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 5. Promotional Banner: "Diwali, beautifully decorated." (Video 00:06 - 00:08) */}
-      <section className="rounded-3xl overflow-hidden bg-gradient-to-r from-[#FFF8EB] via-[#FCEBD2] to-[#F7D7A8] border border-[#D97706]/25 p-5 sm:p-8 grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-7 space-y-1.5 sm:space-y-2.5">
-          <span className="text-xs font-extrabold text-[#D8315B] lowercase">
-            {websiteSettings.brandName}
-          </span>
-          <h3 className="text-lg sm:text-3xl font-extrabold text-[#1C1618] leading-tight">
-            <span className="text-[#C82333] italic font-serif-display">Diwali,</span>
-            <br />
-            beautifully
-            <br />
-            decorated.
-          </h3>
-          <p className="text-[11px] sm:text-xs text-[#555555]">
-            Festive setups for homes & offices
-          </p>
-          <div className="pt-1">
-            <Link
-              to="/collections/other?sub=diwali"
-              className="inline-flex items-center gap-1 px-4 py-2 rounded-full bg-[#C82333] text-white text-[11px] sm:text-xs font-bold hover:bg-[#a71d2a] transition-colors"
-            >
-              <span>Explore Diwali Decor</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-        <div className="col-span-5">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-[#D97706]/30 shadow-sm">
-            <SmartImage
-              src={ASSET_MANIFEST.weddingHaldi}
-              alt="Diwali beautifully decorated"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+      {/* 5. Official Promotional Banner: Diwali, beautifully decorated. */}
+      <section>
+        <Link
+          to="/collections/festive-special"
+          className="block rounded-3xl overflow-hidden border border-[#1C1618]/8 shadow-xs hover:shadow-md transition-shadow"
+        >
+          <SmartImage
+            src={ASSET_MANIFEST.diwaliFestiveBanner}
+            alt="Diwali, beautifully decorated — Explore Diwali Decor"
+            className="w-full h-auto object-cover"
+          />
+        </Link>
       </section>
 
-      {/* 6. Kids Birthday Decorations: 6 Character Themes Grid (Video 00:19, 00:26 - 00:27) */}
-      <section>
+      {/* 6. Kids Birthday Decorations: 6 Character Themes Grid + Unique Kids Theme Products */}
+      <section className="space-y-5">
         <SectionHeading
           title="Kids Birthday Decorations"
           subtitle="Fun-Filled Themes for Every Celebration!"
@@ -420,14 +358,20 @@ export const HomePage: React.FC = () => {
             </Link>
           ))}
         </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6 pt-2">
+          {kidsThemeProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </section>
 
-      {/* 7. Spooky Halloween Decorations (Video 00:27) */}
+      {/* 7. Spooky Halloween Decorations (Category: halloween-decor) */}
       <section>
         <SectionHeading
           title="Spooky Halloween Decorations"
           subtitle="Decor to Die For"
-          viewAllLink="/collections/other?sub=halloween"
+          viewAllLink="/collections/halloween-decor"
         />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
           {halloweenProducts.map((product) => (
@@ -436,25 +380,25 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 8. Romantic Anniversary Decoration (Video 00:28 - 00:29) */}
+      {/* 8. Romantic Anniversary Decoration (Category: anniversary) */}
       <section>
         <SectionHeading
           title="Romantic Anniversary Decoration"
           viewAllLink="/collections/anniversary"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {anniversaryProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 9. The Wedding Collection: "From Haldi to Honeymoon" 6-Card Grid (Video 00:29 - 00:30) */}
-      <section>
+      {/* 9. The Wedding Collection: "From Haldi to Honeymoon" 6-Card Grid + Haldi/Wedding Setups */}
+      <section className="space-y-5">
         <SectionHeading
           title="The Wedding Collection"
           subtitle="From Haldi to Honeymoon"
-          viewAllLink="/collections/wedding"
+          viewAllLink="/collections/wedding-suit"
         />
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4">
           {weddingCollectionCards.map((item) => (
@@ -476,127 +420,127 @@ export const HomePage: React.FC = () => {
             </Link>
           ))}
         </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6 pt-2">
+          {weddingHaldiProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </section>
 
-      {/* 10. Welcome Baby Decoration (Video 00:30 - 00:31) */}
+      {/* 10. Welcome Baby Decoration (Category: newborn-welcome) */}
       <section>
         <SectionHeading
           title="Welcome Baby Decoration"
-          viewAllLink="/collections/baby-kids?sub=newborn-welcome"
+          viewAllLink="/collections/newborn-welcome"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {welcomeBabyProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 11. Baby Shower Decoration (Video 00:31 - 00:32) */}
+      {/* 11. Baby Shower Decoration (Category: baby-shower) */}
       <section>
         <SectionHeading
           title="Baby Shower Decoration"
-          viewAllLink="/collections/baby-kids?sub=baby-shower"
+          viewAllLink="/collections/baby-shower"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {babyShowerProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 12. Balloon Hampers (Video 00:32) */}
+      {/* 12. Balloon Hampers (Category: balloon-bouquets) */}
       <section>
         <SectionHeading
           title="Balloon Hampers"
-          viewAllLink="/collections/other?sub=balloon-bouquets"
+          viewAllLink="/collections/balloon-bouquets"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {balloonHamperProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 13. Bachelorette Party (Video 00:33) */}
+      {/* 13. Bachelorette Party (Category: bachelorette) */}
       <section>
         <SectionHeading
           title="Bachelorette Party"
-          viewAllLink="/collections/wedding?sub=bachelorette"
+          viewAllLink="/collections/bachelorette"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {bacheloretteProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 14. Corporate Event Planner Banner (Video 00:33) */}
-      <section className="rounded-3xl overflow-hidden bg-gradient-to-r from-[#EBF4FA] via-[#DCEBFA] to-[#C7E0F8] border border-[#1E40AF]/15 p-5 sm:p-8 grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-7 space-y-1.5 sm:space-y-2">
-          <h3 className="text-lg sm:text-3xl font-extrabold text-[#1E3A8A] leading-tight">
-            CORPORATE{' '}
-            <span className="italic font-serif-display font-normal text-[#1C1618]">
-              Event Planner
-            </span>
-          </h3>
-          <p className="text-xs sm:text-sm font-medium text-[#334155]">
-            Get Your <strong className="text-[#1E3A8A]">Decoration</strong> Done in Just{' '}
-            <strong className="text-[#1E3A8A]">2 Hours</strong>
-          </p>
-          <div className="pt-1.5">
-            <Link
-              to="/collections/other?sub=shop-opening"
-              className="inline-block px-4 py-2 rounded-lg bg-[#1E3A8A] text-white text-[11px] sm:text-xs font-extrabold uppercase tracking-wider hover:bg-[#172554] transition-colors"
-            >
-              ORDER NOW
-            </Link>
-          </div>
-        </div>
-        <div className="col-span-5">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-white/60 shadow-sm">
-            <SmartImage
-              src={ASSET_MANIFEST.blackGoldMilestone}
-              alt="Corporate Event Planner"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+      {/* 14. Official Corporate Event Planner Banner */}
+      <section>
+        <Link
+          to="/collections/corporate-events"
+          className="block rounded-3xl overflow-hidden border border-[#1C1618]/8 shadow-xs hover:shadow-md transition-shadow"
+        >
+          <SmartImage
+            src={ASSET_MANIFEST.corporateBanner}
+            alt="Corporate Event Planner — Get Your Decoration Done in Just 2 Hours"
+            className="w-full h-auto object-cover"
+          />
+        </Link>
       </section>
 
-      {/* 15. Car Decoration for Wedding (Video 00:34) */}
+      {/* 15. Car Decoration for Wedding (Category: car-decoration) */}
       <section>
         <SectionHeading
           title="Car Decoration for Wedding"
-          viewAllLink="/collections/wedding?sub=wedding-car"
+          viewAllLink="/collections/car-decoration"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {weddingCarProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 16. Shop and Office Decor (Video 00:34 - 00:35) */}
+      {/* 16. Shop and Office Decor (Category: corporate-events) */}
       <section>
         <SectionHeading
           title="Shop and Office Decor"
-          viewAllLink="/collections/other?sub=shop-opening"
+          viewAllLink="/collections/corporate-events"
         />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
           {shopAndOfficeProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      {/* 17. Diwali, Haldi & Bindu Flower Collection (Video 00:21) */}
+      {/* 17. Diwali, Annaprashan & Bindu Flower Decor (Category: festive-special) */}
       <section>
         <SectionHeading
-          title="Diwali, Haldi & Bindu Flower Decor"
-          viewAllLink="/collections/other?sub=diwali"
+          title="Diwali, Annaprashan & Bindu Flower Decor"
+          viewAllLink="/collections/festive-special"
+        />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5 sm:gap-5">
+          {diwaliAndBinduProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      {/* 18. Canopy & Proposal Decorations (Category: romantic-surprises) */}
+      <section>
+        <SectionHeading
+          title="Canopy & Proposal Decorations"
+          viewAllLink="/collections/romantic-surprises"
         />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
-          {diwaliAndBinduProducts.map((product) => (
+          {canopyProposalProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

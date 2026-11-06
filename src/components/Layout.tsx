@@ -74,115 +74,115 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  // Exact 18 Categories for the "Browse by Category" Bottom Sheet (Video 00:40 - 00:43)
+  // Exact 18 Categories for the "Browse by Category" Bottom Sheet (Real BalloonDekor CDN Images)
   const browseSheetItems = [
     {
       label: 'Birthday',
       to: '/collections/birthday',
       bg: 'bg-[#FDEBF0]',
-      img: ASSET_MANIFEST.birthdayRoseGold,
+      img: 'https://cdn.balloondekor.com/14/1783495663745-250562.webp',
     },
     {
       label: 'Kids Theme',
       to: '/collections/kids-themes',
       bg: 'bg-[#E6F4FE]',
-      img: ASSET_MANIFEST.kidsTheme,
+      img: 'https://cdn.balloondekor.com/28/1783496201847-869620.webp',
     },
     {
       label: 'Baby Shower',
-      to: '/collections/baby-kids?sub=baby-shower',
+      to: '/collections/baby-shower',
       bg: 'bg-[#FDEBF0]',
-      img: ASSET_MANIFEST.babyShower,
+      img: 'https://cdn.balloondekor.com/26/1783497454656-860123.webp',
     },
     {
       label: 'Welcome Baby',
-      to: '/collections/baby-kids?sub=newborn-welcome',
+      to: '/collections/newborn-welcome',
       bg: 'bg-[#FCEEE9]',
-      img: ASSET_MANIFEST.welcomeBabyRing,
+      img: 'https://cdn.balloondekor.com/20/1783496718581-460460.webp',
     },
     {
       label: 'Naming Ceremony',
-      to: '/collections/baby-kids?sub=naming-ceremony',
+      to: '/collections/newborn-welcome?sub=naming-ceremony',
       bg: 'bg-[#FEF7E0]',
-      img: ASSET_MANIFEST.welcomeBabyRing,
+      img: 'https://cdn.balloondekor.com/60/1783499200860-468520.webp',
     },
     {
       label: 'Annaprashan',
-      to: '/collections/other?sub=diwali',
+      to: '/collections/festive-special?sub=annaprashan-decor',
       bg: 'bg-[#FDF0E6]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/46/1783495041838-587763.webp',
     },
     {
       label: 'Corporate Event',
-      to: '/collections/other?sub=corporate',
+      to: '/collections/corporate-events',
       bg: 'bg-[#EAFBF0]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/22/1783500025210-352976.webp',
     },
     {
       label: 'Car Boot Decoration',
-      to: '/collections/other?sub=car-boot',
+      to: '/collections/car-decoration?sub=car-boot-decor',
       bg: 'bg-[#E8F2FC]',
-      img: ASSET_MANIFEST.carBootSurprise,
+      img: 'https://cdn.balloondekor.com/22/1783500678436-422519.webp',
     },
     {
       label: 'Canopy Decoration',
-      to: '/collections/romantic?sub=canopy',
+      to: '/collections/romantic-surprises?sub=canopy-setup',
       bg: 'bg-[#FDECEB]',
-      img: ASSET_MANIFEST.cabanaTerrace,
+      img: 'https://cdn.balloondekor.com/22/1783500843904-747603.webp',
     },
     {
       label: 'Proposal Decoration',
-      to: '/collections/romantic?sub=proposal',
+      to: '/collections/romantic-surprises?sub=marry-me-proposal',
       bg: 'bg-[#FDEBF0]',
-      img: ASSET_MANIFEST.romanticAnniversary,
+      img: 'https://cdn.balloondekor.com/24/1783499548047-113043.webp',
     },
     {
       label: 'Bachelorette Decoration',
-      to: '/collections/wedding?sub=bachelorette',
+      to: '/collections/bachelorette',
       bg: 'bg-[#F4EDFC]',
-      img: ASSET_MANIFEST.birthdayRoseGold,
+      img: 'https://cdn.balloondekor.com/22/1783502003537-46026.webp',
     },
     {
       label: 'Wedding Decoration',
-      to: '/collections/wedding',
+      to: '/collections/wedding-suit',
       bg: 'bg-[#FDECEB]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/43/1783498211378-409579.webp',
     },
     {
       label: 'First Night',
-      to: '/collections/wedding?sub=first-night',
+      to: '/collections/wedding-suit?sub=first-night',
       bg: 'bg-[#FDF2EA]',
-      img: ASSET_MANIFEST.romanticRedRoom,
+      img: 'https://cdn.balloondekor.com/22/1783501549308-261786.webp',
     },
     {
       label: 'Anniversary Decoration',
       to: '/collections/anniversary',
       bg: 'bg-[#FDECEB]',
-      img: ASSET_MANIFEST.romanticAnniversary,
+      img: 'https://cdn.balloondekor.com/22/1783502314282-483479.webp',
     },
     {
       label: 'Aqiqah Decoration',
-      to: '/collections/baby-kids?sub=aqiqah',
+      to: '/collections/newborn-welcome',
       bg: 'bg-[#FDF4EB]',
-      img: ASSET_MANIFEST.babyShower,
+      img: 'https://cdn.balloondekor.com/22/1783501156590-854997.webp',
     },
     {
       label: 'Diwali Decoration',
-      to: '/collections/other?sub=diwali',
+      to: '/collections/festive-special?sub=diwali-decor',
       bg: 'bg-[#FEF6E0]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/22/diwali-decor.webp',
     },
     {
       label: 'Halloween Decor',
-      to: '/collections/other?sub=halloween',
+      to: '/collections/halloween-decor',
       bg: 'bg-[#FDF0E6]',
-      img: ASSET_MANIFEST.blackGoldMilestone,
+      img: 'https://cdn.balloondekor.com/22/haloween-category-image.webp',
     },
     {
-      label: 'Bindu Flower',
-      to: '/collections/other?sub=bindu-flower-decor',
+      label: 'Balloon Hampers',
+      to: '/collections/balloon-bouquets',
       bg: 'bg-[#FDEBF0]',
-      img: ASSET_MANIFEST.weddingHaldi,
+      img: 'https://cdn.balloondekor.com/48/cute-happy-birthday-balloon-bouquet.webp',
     },
   ];
 
@@ -268,35 +268,29 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               Anniversary
             </Link>
             <Link
-              to="/collections/baby-kids"
-              onMouseEnter={() => setActiveMegaCategory('baby-kids')}
+              to="/collections/baby-shower"
+              onMouseEnter={() => setActiveMegaCategory('baby-shower')}
               className="hover:text-[#D8315B] transition-colors py-2"
             >
-              Baby Shower & Welcome
+              Baby Shower
             </Link>
             <Link
-              to="/collections/wedding"
-              onMouseEnter={() => setActiveMegaCategory('wedding')}
+              to="/collections/wedding-suit"
+              onMouseEnter={() => setActiveMegaCategory('wedding-suit')}
               className="hover:text-[#D8315B] transition-colors py-2"
             >
               Wedding & Haldi
             </Link>
             <Link
-              to="/collections/other?sub=diwali"
+              to="/collections/festive-special"
               className="hover:text-[#D8315B] transition-colors py-2"
             >
-              Diwali Decor
-            </Link>
-            <Link
-              to="/collections/other?sub=bindu-flower-decor"
-              className="text-[#D8315B] hover:underline py-2"
-            >
-              Bindu Flower
+              Diwali & Floral
             </Link>
           </nav>
 
-          {/* Right: Search Icon, Bag Icon, User Icon */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          {/* Right: Search Icon, Bag Icon, User Icon, Admin Panel Button */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
             <button
               type="button"
               onClick={() => setSearchOpen((v) => !v)}
@@ -327,15 +321,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <User className="w-5 h-5" />
             </Link>
 
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1C1618] text-white text-xs font-semibold"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#F4C2C2]" />
-                <span>Admin</span>
-              </Link>
-            )}
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1C1618] text-white text-[11px] font-bold hover:bg-[#D8315B] transition-colors"
+              title="Open Full Admin Control Panel"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F4C2C2]" />
+              <span>Admin</span>
+            </Link>
 
             {!isInstalled && isInstallable && (
               <button
@@ -656,13 +649,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/collections/baby-kids" className="hover:text-[#D8315B]">
+                  <Link to="/collections/baby-shower" className="hover:text-[#D8315B]">
                     Baby Shower & Welcome Baby
                   </Link>
                 </li>
                 <li>
-                  <Link to="/collections/other?sub=bindu-flower-decor" className="hover:text-[#D8315B]">
-                    Bindu Flower Special
+                  <Link to="/collections/festive-special" className="hover:text-[#D8315B]">
+                    Diwali & Bindu Flower Special
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/admin" className="font-bold text-[#D8315B] hover:underline">
+                    ⚙️ Admin Control Panel
                   </Link>
                 </li>
               </ul>

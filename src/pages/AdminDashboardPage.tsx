@@ -17,12 +17,16 @@ import {
   Plus,
   Trash2,
   Database,
-  ShieldAlert,
+  Upload,
+  Search,
+  Edit3,
+  RotateCcw,
+  CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import {
   AddOn,
-  Booking,
   Category,
   City,
   Coupon,
@@ -32,6 +36,7 @@ import {
   SubcategoryItem,
 } from '../types';
 import { ASSET_MANIFEST } from '../data/seedData';
+import { SmartImage } from '../components/SmartImage';
 
 const ALL_ORDER_STATUSES: OrderStatus[] = [
   'Pending Payment',
@@ -47,6 +52,38 @@ const ALL_ORDER_STATUSES: OrderStatus[] = [
   'Refund Processing',
   'Refunded',
 ];
+
+// Helper to compress uploaded image file into a clean Data URL
+const compressImageFile = (file: File, maxWidth = 900, quality = 0.82): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(String(e.target?.result || ''));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = String(e.target?.result || '');
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 export const AdminDashboardPage: React.FC = () => {
   const {
@@ -79,6 +116,8 @@ export const AdminDashboardPage: React.FC = () => {
     adminUpdateSupportTicket,
     saveWebsiteSettings,
     seedInitialDatabaseIfNeeded,
+    resetLocalCatalogCustomizations,
+    showToast,
   } = useStore();
 
   const location = useLocation();
@@ -87,6 +126,10 @@ export const AdminDashboardPage: React.FC = () => {
   // Filters for Bookings
   const [orderSearch, setOrderSearch] = useState('');
   const [orderCityFilter, setOrderCityFilter] = useState('ALL');
+
+  // Filters for Products in Admin
+  const [adminCategoryFilter, setAdminCategoryFilter] = useState<string>('ALL');
+  const [adminProductSearch, setAdminProductSearch] = useState<string>('');
 
   // Product Form State
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
@@ -137,40 +180,31 @@ export const AdminDashboardPage: React.FC = () => {
     };
   }, [bookings, allUsers]);
 
-  if (!currentUser || !isAdmin) {
-    return (
-      <div className="max-w-xl mx-auto px-4 py-16">
-        <div className="bg-white rounded-3xl p-8 border border-[#1C1618]/10 text-center space-y-5">
-          <div className="w-14 h-14 rounded-2xl bg-[#C83E5B]/10 text-[#C83E5B] flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-7 h-7" />
-          </div>
-          <h1 className="font-serif-display text-3xl font-bold text-[#1C1618]">
-            Admin Authorization Required
-          </h1>
-          <p className="text-xs text-[#6E5D5F] leading-relaxed">
-            Only verified platform administrators (such as{' '}
-            <code className="font-mono-tabular text-[#1C1618]">shriyanshsingh7581@gmail.com</code>{' '}
-            or users listed in <code className="font-mono-tabular">/admins</code>) can modify
-            products, categories, bookings, and pricing in Firestore.
-          </p>
-          <button
-            type="button"
-            onClick={loginWithGoogle}
-            className="px-6 py-3 rounded-xl bg-[#C83E5B] text-white text-xs font-bold hover:bg-[#b0324d]"
-          >
-            Sign In with Admin Google Account
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Filtered Products for Admin Product Manager
+  const filteredAdminProducts = useMemo(() => {
+    return products.filter((p) => {
+      if (adminCategoryFilter !== 'ALL' && p.categoryId !== adminCategoryFilter) {
+        return false;
+      }
+      if (adminProductSearch.trim()) {
+        const q = adminProductSearch.toLowerCase();
+        return (
+          p.title.toLowerCase().includes(q) ||
+          p.categoryId.toLowerCase().includes(q) ||
+          p.subcategoryId.toLowerCase().includes(q) ||
+          String(p.discountedPrice).includes(q)
+        );
+      }
+      return true;
+    });
+  }, [products, adminCategoryFilter, adminProductSearch]);
 
   const navItems = [
     { id: 'overview', to: '/admin', label: 'Overview', icon: LayoutDashboard },
+    { id: 'products', to: '/admin/products', label: `Products (${products.length})`, icon: Package },
+    { id: 'categories', to: '/admin/categories', label: `Categories (${categories.length})`, icon: Layers },
+    { id: 'addons', to: '/admin/addons', label: `Add-Ons (${addOns.length})`, icon: Sparkles },
     { id: 'orders', to: '/admin/orders', label: 'Bookings', icon: CalendarCheck },
-    { id: 'products', to: '/admin/products', label: 'Products', icon: Package },
-    { id: 'categories', to: '/admin/categories', label: 'Categories', icon: Layers },
-    { id: 'addons', to: '/admin/addons', label: 'Add-Ons', icon: Sparkles },
     { id: 'payments', to: '/admin/payments', label: 'Payments', icon: CreditCard },
     { id: 'cities', to: '/admin/cities', label: 'Cities', icon: MapPin },
     { id: 'calendar', to: '/admin/calendar', label: 'Calendar & Slots', icon: Calendar },
@@ -178,8 +212,54 @@ export const AdminDashboardPage: React.FC = () => {
     { id: 'coupons', to: '/admin/coupons', label: 'Coupons', icon: Tag },
     { id: 'customers', to: '/admin/customers', label: 'Customers & Support', icon: Users },
     { id: 'reviews', to: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
-    { id: 'settings', to: '/admin/settings', label: 'Content & Settings', icon: Settings },
+    { id: 'settings', to: '/admin/settings', label: 'Website Settings', icon: Settings },
   ];
+
+  const handleProductPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProduct) return;
+    try {
+      const dataUrl = await compressImageFile(file);
+      setEditingProduct({
+        ...editingProduct,
+        primaryImage: dataUrl,
+        galleryImages: JSON.stringify([dataUrl]),
+      });
+      showToast('Photo uploaded & ready to save!', 'info');
+    } catch {
+      showToast('Could not read image file.', 'error');
+    }
+  };
+
+  const handleCategoryPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingCategory) return;
+    try {
+      const dataUrl = await compressImageFile(file);
+      setEditingCategory({
+        ...editingCategory,
+        bannerImage: dataUrl,
+      });
+      showToast('Category banner uploaded!', 'info');
+    } catch {
+      showToast('Could not read image file.', 'error');
+    }
+  };
+
+  const handleAddOnPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingAddOn) return;
+    try {
+      const dataUrl = await compressImageFile(file, 500, 0.8);
+      setEditingAddOn({
+        ...editingAddOn,
+        image: dataUrl,
+      });
+      showToast('Add-On photo uploaded!', 'info');
+    } catch {
+      showToast('Could not read image file.', 'error');
+    }
+  };
 
   const handleSaveProductForm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,35 +267,42 @@ export const AdminDashboardPage: React.FC = () => {
     const nowIso = new Date().toISOString();
     const id =
       editingProduct.id ||
-      `prod-${editingProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)}`;
+      `prod-${editingProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 45)}-${Date.now().toString(36).slice(-4)}`;
     const slug =
       editingProduct.slug ||
       editingProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 80);
+
+    const primaryImg = editingProduct.primaryImage || ASSET_MANIFEST.birthdayRoseGold;
 
     await saveProduct({
       id,
       slug,
       title: editingProduct.title,
-      description: editingProduct.description || 'Curated Bindu flower celebration package.',
+      description:
+        editingProduct.description ||
+        `${editingProduct.title} curated by Bindu flower trained decorators across Rajasthan & India.`,
       categoryId: editingProduct.categoryId || 'birthday',
-      subcategoryId: editingProduct.subcategoryId || 'rose-gold-birthday',
-      originalPrice: Number(editingProduct.originalPrice) || 4999,
-      discountedPrice: Number(editingProduct.discountedPrice) || 3499,
+      subcategoryId: editingProduct.subcategoryId || 'birthday-decor',
+      originalPrice: Number(editingProduct.originalPrice) || 3499,
+      discountedPrice: Number(editingProduct.discountedPrice) || 2499,
       rating: Number(editingProduct.rating) || 4.9,
-      reviewsCount: Number(editingProduct.reviewsCount) || 25,
-      setupDuration: editingProduct.setupDuration || '90 Mins',
-      primaryImage: editingProduct.primaryImage || ASSET_MANIFEST.birthdayRoseGold,
-      galleryImages:
-        editingProduct.galleryImages ||
-        JSON.stringify([editingProduct.primaryImage || ASSET_MANIFEST.birthdayRoseGold]),
+      reviewsCount: Number(editingProduct.reviewsCount) || 45,
+      setupDuration: editingProduct.setupDuration || '2 Hours',
+      primaryImage: primaryImg,
+      galleryImages: JSON.stringify([primaryImg]),
       includedItems:
         editingProduct.includedItems ||
-        JSON.stringify(['200+ Metallic & Pastel Balloons', 'Backdrop & Lighting Setup']),
-      excludedItems: editingProduct.excludedItems || JSON.stringify(['Tableware']),
+        JSON.stringify([
+          'Complete Balloon Arch & Backdrop Styling',
+          'Occasion Foil Banner / Neon Light',
+          'Professional On-Time Setup by Bindu flower Team',
+        ]),
+      excludedItems: editingProduct.excludedItems || JSON.stringify(['Tableware', 'Cake']),
       instructions:
         editingProduct.instructions || JSON.stringify(['Damage-free 3M Command hook setup.']),
       themeColors:
-        editingProduct.themeColors || JSON.stringify(['Rose Gold & White', 'Champagne Gold']),
+        editingProduct.themeColors ||
+        JSON.stringify(['As Shown in Photo', 'Rose Gold & White', 'Pastel & Gold']),
       isTrending: Boolean(editingProduct.isTrending),
       isEnabled: editingProduct.isEnabled !== false,
       createdAt: editingProduct.createdAt || nowIso,
@@ -321,7 +408,7 @@ export const AdminDashboardPage: React.FC = () => {
     await saveDecorator({
       id,
       name: editingDecorator.name,
-      phone: editingDecorator.phone || '+91 98201 00000',
+      phone: editingDecorator.phone || '+91 99835 62406',
       cityId: cityObj.id,
       cityName: cityObj.name,
       specialty: editingDecorator.specialty || 'Balloon Arches & Canopies',
@@ -334,33 +421,72 @@ export const AdminDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-24">
       {/* Top Admin Header */}
-      <div className="bg-[#1C1618] text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#F4C2C2]">
-            Bindu flower Control Center
-          </p>
-          <h1 className="font-serif-display text-3xl font-bold text-white">
-            Enterprise Admin & Booking Operations
+      <div className="bg-[#1C1618] text-white rounded-3xl p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full bg-[#1E7E5A] text-white text-[11px] font-bold inline-flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> Full Control Admin Active
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#F4C2C2]">
+              Rajasthan ka event expert · {websiteSettings.brandName}
+            </span>
+          </div>
+          <h1 className="font-serif-display text-2xl sm:text-3xl font-bold text-white">
+            Admin Panel — Edit Prices, Photos, Categories & Orders
           </h1>
-          <p className="text-xs text-white/70 mt-1">
-            Authenticated as {currentUser.email} · Real-Time Firestore Persistence
+          <p className="text-xs text-white/75">
+            {currentUser && isAdmin
+              ? `Cloud Sync Connected (${currentUser.email}) · ${products.length} Unique Products across ${categories.length} Categories`
+              : `Instant Admin Mode Active · ${products.length} Unique Products across ${categories.length} Categories`}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={seedInitialDatabaseIfNeeded}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold hover:bg-[#b0324d] shrink-0"
-        >
-          <Database className="w-4 h-4" />
-          <span>Sync Seed Catalog to Firestore</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Link
+            to="/admin/products"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-bold hover:bg-[#b8254a]"
+          >
+            <Package className="w-4 h-4" />
+            <span>Manage Products & Photos</span>
+          </Link>
+
+          {!currentUser && (
+            <button
+              type="button"
+              onClick={loginWithGoogle}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 border border-white/15"
+            >
+              <span>Google Login (Cloud Sync)</span>
+            </button>
+          )}
+
+          {currentUser && isAdmin && (
+            <button
+              type="button"
+              onClick={seedInitialDatabaseIfNeeded}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 border border-white/15"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>Sync All to Cloud</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={resetLocalCatalogCustomizations}
+            title="Restore default 69 unique products"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/10 text-white/80 text-xs font-semibold hover:bg-white/20 border border-white/10"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Defaults</span>
+          </button>
+        </div>
       </div>
 
       {/* Horizontal Admin Module Switcher */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active =
@@ -369,10 +495,10 @@ export const AdminDashboardPage: React.FC = () => {
             <Link
               key={item.id}
               to={item.to}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                 active
-                  ? 'bg-[#C83E5B] text-white'
-                  : 'bg-white border border-[#1C1618]/10 text-[#6E5D5F] hover:text-[#1C1618]'
+                  ? 'bg-[#D8315B] text-white shadow-xs'
+                  : 'bg-white border border-[#1C1618]/12 text-[#555555] hover:text-[#1C1618]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -384,7 +510,70 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* MODULE 1: OVERVIEW */}
       {subPath === 'overview' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
+          {/* Quick Action Cards for Owner */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link
+              to="/admin/products"
+              className="bg-white rounded-2xl p-5 border-2 border-[#D8315B]/25 hover:border-[#D8315B] transition-all flex items-center justify-between group"
+            >
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#D8315B]">
+                  Full Product Control
+                </span>
+                <h3 className="text-lg font-extrabold text-[#1C1618] mt-0.5">
+                  Change Prices & Upload Photos
+                </h3>
+                <p className="text-xs text-[#6E5D5F] mt-1">
+                  {products.length} unique products · 0 duplicates
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-[#FFF0F3] text-[#D8315B] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Package className="w-5 h-5" />
+              </div>
+            </Link>
+
+            <Link
+              to="/admin/categories"
+              className="bg-white rounded-2xl p-5 border border-[#1C1618]/12 hover:border-[#D8315B] transition-all flex items-center justify-between group"
+            >
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E5D5F]">
+                  Category Organization
+                </span>
+                <h3 className="text-lg font-extrabold text-[#1C1618] mt-0.5">
+                  Manage {categories.length} Categories
+                </h3>
+                <p className="text-xs text-[#6E5D5F] mt-1">
+                  Birthday, Kids, Welcome Baby, Car Decor & more
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-[#FAF7F2] text-[#1C1618] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Layers className="w-5 h-5" />
+              </div>
+            </Link>
+
+            <Link
+              to="/admin/settings"
+              className="bg-white rounded-2xl p-5 border border-[#1C1618]/12 hover:border-[#D8315B] transition-all flex items-center justify-between group"
+            >
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E5D5F]">
+                  Brand & WhatsApp
+                </span>
+                <h3 className="text-lg font-extrabold text-[#1C1618] mt-0.5">
+                  {websiteSettings.brandName}
+                </h3>
+                <p className="text-xs text-[#6E5D5F] mt-1 tabular-nums">
+                  {websiteSettings.supportPhone}
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl bg-[#FAF7F2] text-[#1C1618] flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Settings className="w-5 h-5" />
+              </div>
+            </Link>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-2xl p-5 border border-[#1C1618]/8">
               <p className="text-xs text-[#6E5D5F]">Verified Paid Revenue</p>
@@ -414,7 +603,7 @@ export const AdminDashboardPage: React.FC = () => {
               </p>
             </div>
             <div className="bg-white rounded-2xl p-5 border border-[#1C1618]/8">
-              <p className="text-xs text-[#6E5D5F]">Catalog & Cities</p>
+              <p className="text-xs text-[#6E5D5F]">Unique Catalog</p>
               <p className="text-2xl font-bold text-[#1C1618] tabular-nums mt-1">
                 {products.length} Setups
               </p>
@@ -424,49 +613,725 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Popular Products Table */}
+          {/* Category-wise Breakdown Table */}
           <div className="bg-white rounded-3xl p-6 border border-[#1C1618]/8 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
-                Top Performing Celebration Packages
-              </h2>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
+                  Category-by-Category Product Distribution
+                </h2>
+                <p className="text-xs text-[#6E5D5F]">
+                  Every product is strictly unique (1 time only) and organized into its dedicated category.
+                </p>
+              </div>
               <Link
                 to="/admin/products"
-                className="text-xs font-semibold text-[#C83E5B] hover:underline"
+                className="px-4 py-2 rounded-xl bg-[#D8315B] text-white text-xs font-bold"
               >
-                Manage All Products →
+                Edit Products & Prices →
               </Link>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[#1C1618]/10 text-[#6E5D5F]">
-                    <th className="py-2.5 pr-4">Package Title</th>
-                    <th className="py-2.5 px-4">Category</th>
-                    <th className="py-2.5 px-4">Price</th>
-                    <th className="py-2.5 px-4">Rating</th>
-                    <th className="py-2.5 pl-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1C1618]/6">
-                  {products.slice(0, 6).map((p) => (
-                    <tr key={p.id}>
-                      <td className="py-3 pr-4 font-semibold text-[#1C1618]">{p.title}</td>
-                      <td className="py-3 px-4 text-[#6E5D5F]">{p.categoryId}</td>
-                      <td className="py-3 px-4 font-bold tabular-nums">
-                        ₹{p.discountedPrice.toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3 px-4 tabular-nums">
-                        ★ {p.rating.toFixed(1)} ({p.reviewsCount})
-                      </td>
-                      <td className="py-3 pl-4 font-semibold text-[#1E7E5A]">
-                        {p.isEnabled ? 'Active' : 'Disabled'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {categories.map((cat) => {
+                const count = products.filter((p) => p.categoryId === cat.id).length;
+                return (
+                  <Link
+                    key={cat.id}
+                    to="/admin/products"
+                    onClick={() => setAdminCategoryFilter(cat.id)}
+                    className="p-3.5 rounded-2xl bg-[#FAF7F5] border border-[#1C1618]/8 hover:border-[#D8315B] transition-all flex items-center gap-3"
+                  >
+                    <SmartImage
+                      src={cat.bannerImage}
+                      alt={cat.name}
+                      className="w-12 h-12 rounded-xl object-cover shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-xs font-extrabold text-[#1C1618] truncate">{cat.name}</p>
+                      <p className="text-[11px] font-semibold text-[#D8315B] tabular-nums">
+                        {count} Unique Setups
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODULE 3: PRODUCT MANAGEMENT (FULL CONTROL OVER PRICE, PHOTO, CATEGORY, DETAILS) */}
+      {subPath === 'products' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#1C1618]/10 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
+                  Product Catalog ({filteredAdminProducts.length} of {products.length})
+                </h2>
+                <p className="text-xs text-[#6E5D5F]">
+                  Click <strong>Edit Price / Photo</strong> on any product below to change its price, upload a new photo from your phone/computer, or move it to another category.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingProduct({
+                    title: '',
+                    categoryId: adminCategoryFilter === 'ALL' ? 'birthday' : adminCategoryFilter,
+                    subcategoryId: 'birthday-decor',
+                    originalPrice: 3499,
+                    discountedPrice: 2499,
+                    rating: 4.9,
+                    reviewsCount: 35,
+                    setupDuration: '2 Hours',
+                    primaryImage: ASSET_MANIFEST.birthdayRoseGold,
+                    isTrending: true,
+                    isEnabled: true,
+                  });
+                  window.scrollTo({ top: 120, behavior: 'smooth' });
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-bold hover:bg-[#b8254a] shrink-0"
+              >
+                <Plus className="w-4 h-4" /> Add New Product
+              </button>
+            </div>
+
+            {/* Category Filter Pills (Category-by-Category View) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setAdminCategoryFilter('ALL')}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors shrink-0 ${
+                  adminCategoryFilter === 'ALL'
+                    ? 'bg-[#1C1618] text-white'
+                    : 'bg-[#FAF7F2] text-[#555555] hover:text-[#1C1618]'
+                }`}
+              >
+                All Categories ({products.length})
+              </button>
+              {categories.map((cat) => {
+                const count = products.filter((p) => p.categoryId === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setAdminCategoryFilter(cat.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors shrink-0 ${
+                      adminCategoryFilter === cat.id
+                        ? 'bg-[#D8315B] text-white'
+                        : 'bg-[#FAF7F2] text-[#555555] hover:text-[#1C1618]'
+                    }`}
+                  >
+                    {cat.name} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search Input */}
+            <div className="relative max-w-md">
+              <Search className="w-4 h-4 text-[#6E5D5F] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={adminProductSearch}
+                onChange={(e) => setAdminProductSearch(e.target.value)}
+                placeholder="Search product by name, price, or category..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 text-xs focus:outline-none focus:border-[#D8315B]"
+              />
+            </div>
+          </div>
+
+          {/* Product Create / Edit Modal Form */}
+          {editingProduct && (
+            <form
+              onSubmit={handleSaveProductForm}
+              className="bg-white rounded-3xl p-6 border-2 border-[#D8315B] shadow-lg space-y-5 text-xs"
+            >
+              <div className="flex items-center justify-between border-b border-[#1C1618]/10 pb-3">
+                <h3 className="font-serif-display text-2xl font-bold text-[#1C1618]">
+                  {editingProduct.id ? `Edit: ${editingProduct.title}` : 'Add New Decoration Product'}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="px-3 py-1 rounded-lg bg-[#FAF7F2] text-[#6E5D5F] font-semibold"
+                >
+                  Close ✕
+                </button>
+              </div>
+
+              {/* Photo Preview + Upload from Device + Image URL */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center bg-[#FAF7F5] p-4 rounded-2xl border border-[#1C1618]/10">
+                <div className="md:col-span-3 flex flex-col items-center gap-2">
+                  <div className="w-36 h-36 rounded-2xl overflow-hidden border border-[#1C1618]/15 bg-white">
+                    <SmartImage
+                      src={editingProduct.primaryImage || ASSET_MANIFEST.birthdayRoseGold}
+                      alt={editingProduct.title || 'Preview'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-[11px] font-semibold text-[#6E5D5F]">Live Photo Preview</span>
+                </div>
+
+                <div className="md:col-span-9 space-y-3">
+                  <div>
+                    <label className="block font-bold text-[#1C1618] mb-1.5">
+                      Option 1: Upload Photo Directly from Phone / Computer
+                    </label>
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white font-bold cursor-pointer hover:bg-[#b8254a]">
+                      <Upload className="w-4 h-4" />
+                      <span>Choose Photo from Device</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProductPhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#1C1618] mb-1">
+                      Option 2: Or Paste Any Direct Image URL (CDN / Website Link)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingProduct.primaryImage || ''}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, primaryImage: e.target.value })
+                      }
+                      placeholder="https://cdn.balloondekor.com/..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#1C1618]/15"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-[#1C1618] mb-1">Product Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingProduct.title || ''}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, title: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1C1618] mb-1">Category *</label>
+                  <select
+                    value={editingProduct.categoryId || 'birthday'}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, categoryId: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 font-bold"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <label className="block font-bold text-[#1E7E5A] mb-1">
+                    Selling Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editingProduct.discountedPrice || 0}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        discountedPrice: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border-2 border-[#1E7E5A]/40 font-extrabold text-sm text-[#1C1618]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#6E5D5F] mb-1">
+                    Original MRP Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct.originalPrice || 0}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        originalPrice: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#6E5D5F] mb-1">Subcategory Tag</label>
+                  <input
+                    type="text"
+                    value={editingProduct.subcategoryId || ''}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, subcategoryId: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#6E5D5F] mb-1">Setup Time</label>
+                  <input
+                    type="text"
+                    value={editingProduct.setupDuration || ''}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, setupDuration: e.target.value })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#6E5D5F] mb-1">Package Description</label>
+                <textarea
+                  rows={2}
+                  value={editingProduct.description || ''}
+                  onChange={(e) =>
+                    setEditingProduct({ ...editingProduct, description: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <label className="inline-flex items-center gap-2 font-bold text-[#1C1618] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingProduct.isEnabled !== false}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, isEnabled: e.target.checked })
+                    }
+                    className="w-4 h-4 accent-[#D8315B]"
+                  />
+                  <span>Show Product Live on Website</span>
+                </label>
+
+                <div className="flex gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(null)}
+                    className="px-4 py-2.5 rounded-xl bg-[#FAF7F2] font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-[#D8315B] text-white font-bold shadow-md hover:bg-[#b8254a]"
+                  >
+                    Save Product Changes
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* Product Grid List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredAdminProducts.map((p) => {
+              const catName =
+                categories.find((c) => c.id === p.categoryId)?.name || p.categoryId;
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white rounded-2xl p-4 border border-[#1C1618]/10 flex flex-col justify-between gap-3.5 text-xs hover:border-[#D8315B]/50 transition-all"
+                >
+                  <div className="flex items-start gap-3.5">
+                    <SmartImage
+                      src={p.primaryImage}
+                      alt={p.title}
+                      className="w-20 h-20 rounded-xl object-cover shrink-0 border border-[#1C1618]/10"
+                    />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <span className="inline-block px-2 py-0.5 rounded-md bg-[#FFF0F3] text-[#D8315B] text-[10px] font-bold">
+                        {catName}
+                      </span>
+                      <p className="font-extrabold text-[#1C1618] text-sm leading-snug line-clamp-2">
+                        {p.title}
+                      </p>
+                      <div className="flex items-baseline gap-2 pt-0.5">
+                        <span className="text-base font-extrabold text-[#1E7E5A] tabular-nums">
+                          ₹{p.discountedPrice.toLocaleString('en-IN')}
+                        </span>
+                        {p.originalPrice > p.discountedPrice && (
+                          <span className="text-xs text-[#8C7B7D] line-through tabular-nums">
+                            ₹{p.originalPrice.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#1C1618]/8">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProduct(p);
+                        window.scrollTo({ top: 120, behavior: 'smooth' });
+                      }}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#FAF7F2] hover:bg-[#D8315B] hover:text-white border border-[#1C1618]/12 font-bold transition-colors"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Edit Price / Photo</span>
+                    </button>
+
+                    <Link
+                      to={`/product/${p.slug}`}
+                      className="p-2 rounded-xl bg-[#FAF7F2] text-[#6E5D5F] hover:text-[#1C1618] border border-[#1C1618]/10"
+                      title="View on Website"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => deleteProduct(p.id)}
+                      className="p-2 rounded-xl bg-[#FFF0F0] text-[#C93B2B] hover:bg-[#C93B2B] hover:text-white transition-colors"
+                      title="Delete Product"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* MODULE 4: CATEGORY & SUBCATEGORY MANAGEMENT */}
+      {subPath === 'categories' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
+                Categories & Subcategories ({categories.length})
+              </h2>
+              <p className="text-xs text-[#6E5D5F]">
+                Add new categories, change category photos, or add subcategories.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setEditingCategory({
+                  name: '',
+                  description: '',
+                  bannerImage: ASSET_MANIFEST.heroBanner,
+                  subcategoriesJson: '[]',
+                  isEnabled: true,
+                  sortOrder: categories.length + 1,
+                })
+              }
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-bold"
+            >
+              <Plus className="w-4 h-4" /> Create Category
+            </button>
+          </div>
+
+          {editingCategory && (
+            <form
+              onSubmit={handleSaveCategoryForm}
+              className="bg-white rounded-3xl p-6 border-2 border-[#D8315B] space-y-4 text-xs"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-[#1C1618] mb-1">Category Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingCategory.name || ''}
+                    onChange={(e) =>
+                      setEditingCategory({ ...editingCategory, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1C1618] mb-1">Banner Image URL</label>
+                  <input
+                    type="text"
+                    value={editingCategory.bannerImage || ''}
+                    onChange={(e) =>
+                      setEditingCategory({ ...editingCategory, bannerImage: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1C1618] mb-1">
+                    Or Upload Banner Photo
+                  </label>
+                  <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#D8315B] text-white font-bold cursor-pointer">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCategoryPhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#6E5D5F] mb-1">
+                  Add Subcategory (e.g. Ring Ceremony, Canopy, Cocomelon)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubName}
+                    onChange={(e) => setNewSubName(e.target.value)}
+                    placeholder="New subcategory name..."
+                    className="flex-1 px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newSubName.trim()) return;
+                      let currentSubs: SubcategoryItem[] = [];
+                      try {
+                        currentSubs = JSON.parse(editingCategory.subcategoriesJson || '[]');
+                      } catch {
+                        currentSubs = [];
+                      }
+                      const slug = newSubName
+                        .trim()
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-');
+                      currentSubs.push({ id: slug, name: newSubName.trim(), slug });
+                      setEditingCategory({
+                        ...editingCategory,
+                        subcategoriesJson: JSON.stringify(currentSubs),
+                      });
+                      setNewSubName('');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#1C1618] text-white font-semibold"
+                  >
+                    + Add Subcategory
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCategory(null)}
+                  className="px-4 py-2 rounded-xl bg-[#FAF7F2] font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#D8315B] text-white font-bold"
+                >
+                  Save Category
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {categories.map((c) => {
+              let subs: SubcategoryItem[] = [];
+              try {
+                subs = JSON.parse(c.subcategoriesJson || '[]');
+              } catch {
+                subs = [];
+              }
+              const prodCount = products.filter((p) => p.categoryId === c.id).length;
+              return (
+                <div
+                  key={c.id}
+                  className="bg-white rounded-2xl p-4 border border-[#1C1618]/8 flex items-center justify-between gap-4 text-xs"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <SmartImage
+                      src={c.bannerImage}
+                      alt={c.name}
+                      className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#1C1618]/10"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="font-serif-display text-lg font-bold text-[#1C1618] truncate">
+                        {c.name}
+                      </h3>
+                      <p className="text-[#D8315B] font-bold">{prodCount} Unique Products</p>
+                      <p className="text-[#6E5D5F] truncate mt-0.5">
+                        {subs.map((s) => s.name).join(' · ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setEditingCategory(c)}
+                      className="px-3 py-1.5 rounded-lg bg-[#FAF7F2] border border-[#1C1618]/15 font-bold"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteCategory(c.id)}
+                      className="text-[#C93B2B] p-1.5"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* MODULE 5: ADD-ONS MANAGEMENT */}
+      {subPath === 'addons' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
+              Customization Add-Ons ({addOns.length})
+            </h2>
+            <button
+              type="button"
+              onClick={() =>
+                setEditingAddOn({
+                  title: '',
+                  category: 'Balloons & Props',
+                  price: 299,
+                  image: ASSET_MANIFEST.birthdayRoseGold,
+                  isEnabled: true,
+                })
+              }
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-bold"
+            >
+              <Plus className="w-4 h-4" /> Add New Add-On
+            </button>
+          </div>
+
+          {editingAddOn && (
+            <form
+              onSubmit={handleSaveAddOnForm}
+              className="bg-white rounded-3xl p-6 border-2 border-[#D8315B] space-y-4 text-xs"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-[#1C1618] mb-1">Add-On Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingAddOn.title || ''}
+                    onChange={(e) => setEditingAddOn({ ...editingAddOn, title: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1C1618] mb-1">Price (₹)</label>
+                  <input
+                    type="number"
+                    value={editingAddOn.price || 0}
+                    onChange={(e) =>
+                      setEditingAddOn({ ...editingAddOn, price: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                  />
+                </div>
+                <div>
+                  <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#D8315B] text-white font-bold cursor-pointer">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Photo</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAddOnPhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#6E5D5F] mb-1">Image URL</label>
+                <input
+                  type="text"
+                  value={editingAddOn.image || ''}
+                  onChange={(e) => setEditingAddOn({ ...editingAddOn, image: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAddOn(null)}
+                  className="px-4 py-2 rounded-xl bg-[#FAF7F2] font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#D8315B] text-white font-bold"
+                >
+                  Save Add-On
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {addOns.map((a) => (
+              <div
+                key={a.id}
+                className="bg-white rounded-2xl p-4 border border-[#1C1618]/8 flex items-center justify-between gap-3 text-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <SmartImage
+                    src={a.image}
+                    alt={a.title}
+                    className="w-14 h-14 rounded-xl object-cover shrink-0 border border-[#1C1618]/10"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-bold text-[#1C1618] truncate">{a.title}</p>
+                    <p className="text-[#D8315B] font-extrabold tabular-nums">
+                      ₹{a.price} · {a.category}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setEditingAddOn(a)}
+                    className="px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] border border-[#1C1618]/15 font-bold"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteAddOn(a.id)}
+                    className="text-[#C93B2B] p-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -479,7 +1344,7 @@ export const AdminDashboardPage: React.FC = () => {
               type="text"
               value={orderSearch}
               onChange={(e) => setOrderSearch(e.target.value)}
-              placeholder="Search by Order ID (e.g. UD-2026...), Customer Name or Phone..."
+              placeholder="Search by Order ID, Customer Name or Phone..."
               className="flex-1 px-3.5 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 text-xs"
             />
             <select
@@ -498,8 +1363,7 @@ export const AdminDashboardPage: React.FC = () => {
 
           {bookings.length === 0 ? (
             <div className="bg-white rounded-3xl p-10 text-center border border-[#1C1618]/8 text-xs text-[#6E5D5F]">
-              No customer bookings recorded yet. Place a booking from the storefront to manage it in
-              real time.
+              No customer bookings recorded yet. Place a booking from the storefront to manage it here.
             </div>
           ) : (
             bookings
@@ -552,7 +1416,7 @@ export const AdminDashboardPage: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <div>
                       <label className="block font-semibold text-[#6E5D5F] mb-1">
-                        Update Order Status (Real-Time)
+                        Update Order Status
                       </label>
                       <select
                         value={bk.orderStatus}
@@ -626,486 +1490,6 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* MODULE 3: PRODUCT MANAGEMENT */}
-      {subPath === 'products' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
-              Product Catalog ({products.length})
-            </h2>
-            <button
-              type="button"
-              onClick={() =>
-                setEditingProduct({
-                  title: '',
-                  categoryId: 'birthday',
-                  subcategoryId: 'rose-gold-birthday',
-                  originalPrice: 5499,
-                  discountedPrice: 3999,
-                  setupDuration: '90 Mins',
-                  primaryImage: ASSET_MANIFEST.birthdayRoseGold,
-                  isEnabled: true,
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
-            >
-              <Plus className="w-4 h-4" /> Add New Product
-            </button>
-          </div>
-
-          {editingProduct && (
-            <form
-              onSubmit={handleSaveProductForm}
-              className="bg-white rounded-3xl p-6 border border-[#C83E5B] space-y-4 text-xs"
-            >
-              <h3 className="font-serif-display text-xl font-bold text-[#1C1618]">
-                {editingProduct.id ? 'Edit Product' : 'Create New Decoration Package'}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Package Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingProduct.title || ''}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, title: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Category</label>
-                  <select
-                    value={editingProduct.categoryId || 'birthday'}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, categoryId: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Subcategory Slug</label>
-                  <input
-                    type="text"
-                    value={editingProduct.subcategoryId || ''}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, subcategoryId: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">
-                    Original Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={editingProduct.originalPrice || 0}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        originalPrice: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">
-                    Discounted Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={editingProduct.discountedPrice || 0}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        discountedPrice: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Setup Duration</label>
-                  <input
-                    type="text"
-                    value={editingProduct.setupDuration || ''}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, setupDuration: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#6E5D5F] mb-1">
-                  Primary Image URL (Cloudinary or Asset Path)
-                </label>
-                <input
-                  type="text"
-                  value={editingProduct.primaryImage || ''}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, primaryImage: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#6E5D5F] mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={editingProduct.description || ''}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2 rounded-xl bg-[#FAF7F2] font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
-                >
-                  Save Product to Firestore
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {products.map((p) => (
-              <div
-                key={p.id}
-                className="bg-white rounded-2xl p-4 border border-[#1C1618]/8 flex items-center justify-between gap-4 text-xs"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={p.primaryImage}
-                    alt={p.title}
-                    referrerPolicy="no-referrer"
-                    className="w-16 h-12 rounded-xl object-cover shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="font-bold text-[#1C1618] truncate">{p.title}</p>
-                    <p className="text-[#6E5D5F] tabular-nums">
-                      ₹{p.discountedPrice.toLocaleString('en-IN')} · {p.categoryId}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setEditingProduct(p)}
-                    className="px-3 py-1.5 rounded-lg bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteProduct(p.id)}
-                    className="p-1.5 text-[#C93B2B]"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* MODULE 4: CATEGORY & SUBCATEGORY MANAGEMENT */}
-      {subPath === 'categories' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
-              Categories & Unlimited Subcategories
-            </h2>
-            <button
-              type="button"
-              onClick={() =>
-                setEditingCategory({
-                  name: '',
-                  description: '',
-                  bannerImage: ASSET_MANIFEST.heroBanner,
-                  subcategoriesJson: '[]',
-                  isEnabled: true,
-                  sortOrder: categories.length + 1,
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
-            >
-              <Plus className="w-4 h-4" /> Create Category
-            </button>
-          </div>
-
-          {editingCategory && (
-            <form
-              onSubmit={handleSaveCategoryForm}
-              className="bg-white rounded-3xl p-6 border border-[#C83E5B] space-y-4 text-xs"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Category Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingCategory.name || ''}
-                    onChange={(e) =>
-                      setEditingCategory({ ...editingCategory, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Banner Image URL</label>
-                  <input
-                    type="text"
-                    value={editingCategory.bannerImage || ''}
-                    onChange={(e) =>
-                      setEditingCategory({ ...editingCategory, bannerImage: e.target.value })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-[#6E5D5F] mb-1">Sort Order</label>
-                  <input
-                    type="number"
-                    value={editingCategory.sortOrder || 1}
-                    onChange={(e) =>
-                      setEditingCategory({
-                        ...editingCategory,
-                        sortOrder: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#6E5D5F] mb-1">
-                  Add Subcategory (e.g. Bindu Flower, Cocomelon, Canopy)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newSubName}
-                    onChange={(e) => setNewSubName(e.target.value)}
-                    placeholder="New subcategory name..."
-                    className="flex-1 px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!newSubName.trim()) return;
-                      let currentSubs: SubcategoryItem[] = [];
-                      try {
-                        currentSubs = JSON.parse(editingCategory.subcategoriesJson || '[]');
-                      } catch {
-                        currentSubs = [];
-                      }
-                      const slug = newSubName
-                        .trim()
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-');
-                      currentSubs.push({ id: slug, name: newSubName.trim(), slug });
-                      setEditingCategory({
-                        ...editingCategory,
-                        subcategoriesJson: JSON.stringify(currentSubs),
-                      });
-                      setNewSubName('');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-[#1C1618] text-white font-semibold"
-                  >
-                    + Add Subcategory
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingCategory(null)}
-                  className="px-4 py-2 rounded-xl bg-[#FAF7F2] font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
-                >
-                  Save Category
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {categories.map((c) => {
-              let subs: SubcategoryItem[] = [];
-              try {
-                subs = JSON.parse(c.subcategoriesJson || '[]');
-              } catch {
-                subs = [];
-              }
-              return (
-                <div
-                  key={c.id}
-                  className="bg-white rounded-2xl p-5 border border-[#1C1618]/8 space-y-2 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif-display text-xl font-bold text-[#1C1618]">{c.name}</h3>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setEditingCategory(c)}
-                        className="px-3 py-1 rounded-lg bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
-                      >
-                        Edit / Add Subcategories
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteCategory(c.id)}
-                        className="text-[#C93B2B] p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-[#6E5D5F]">
-                    {subs.map((s) => s.name).join(' · ')}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* MODULE 5: ADD-ONS MANAGEMENT */}
-      {subPath === 'addons' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
-              Interactive Add-Ons ({addOns.length})
-            </h2>
-            <button
-              type="button"
-              onClick={() =>
-                setEditingAddOn({
-                  title: '',
-                  category: 'Cakes & Florals',
-                  price: 599,
-                  isEnabled: true,
-                })
-              }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
-            >
-              <Plus className="w-4 h-4" /> Add New Add-On
-            </button>
-          </div>
-
-          {editingAddOn && (
-            <form
-              onSubmit={handleSaveAddOnForm}
-              className="bg-white rounded-3xl p-6 border border-[#C83E5B] grid grid-cols-1 sm:grid-cols-4 gap-4 items-end text-xs"
-            >
-              <div className="sm:col-span-2">
-                <label className="block font-semibold text-[#6E5D5F] mb-1">Add-On Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingAddOn.title || ''}
-                  onChange={(e) => setEditingAddOn({ ...editingAddOn, title: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold text-[#6E5D5F] mb-1">Price (₹)</label>
-                <input
-                  type="number"
-                  value={editingAddOn.price || 0}
-                  onChange={(e) =>
-                    setEditingAddOn({ ...editingAddOn, price: Number(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 rounded-xl bg-[#FAF7F2] border border-[#1C1618]/15"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingAddOn(null)}
-                  className="px-3 py-2 rounded-xl bg-[#FAF7F2]"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {addOns.map((a) => (
-              <div
-                key={a.id}
-                className="bg-white rounded-2xl p-4 border border-[#1C1618]/8 flex items-center justify-between text-xs"
-              >
-                <div>
-                  <p className="font-bold text-[#1C1618]">{a.title}</p>
-                  <p className="text-[#C83E5B] font-semibold tabular-nums">
-                    ₹{a.price} · {a.category}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingAddOn(a)}
-                    className="px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#1C1618]/15 font-semibold"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteAddOn(a.id)}
-                    className="text-[#C93B2B] p-1"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* MODULE 6: PAYMENTS & TRANSACTIONS */}
       {subPath === 'payments' && (
         <div className="bg-white rounded-3xl p-6 border border-[#1C1618]/8 space-y-4">
@@ -1168,7 +1552,7 @@ export const AdminDashboardPage: React.FC = () => {
                   isEnabled: true,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-semibold"
             >
               <Plus className="w-4 h-4" /> Add Service City
             </button>
@@ -1274,7 +1658,7 @@ export const AdminDashboardPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
+                  className="px-5 py-2 rounded-xl bg-[#D8315B] text-white font-semibold"
                 >
                   Save City Settings
                 </button>
@@ -1322,13 +1706,13 @@ export const AdminDashboardPage: React.FC = () => {
               onClick={() =>
                 setEditingDecorator({
                   name: '',
-                  phone: '+91 ',
-                  cityId: 'mumbai',
+                  phone: '+91 99835 62406',
+                  cityId: 'jaipur',
                   specialty: 'Balloon Arches & Canopies',
                   isAvailable: true,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-semibold"
             >
               <Plus className="w-4 h-4" /> Add Decorator Crew
             </button>
@@ -1365,7 +1749,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div>
                 <label className="block font-semibold text-[#6E5D5F] mb-1">City</label>
                 <select
-                  value={editingDecorator.cityId || 'mumbai'}
+                  value={editingDecorator.cityId || 'jaipur'}
                   onChange={(e) =>
                     setEditingDecorator({ ...editingDecorator, cityId: e.target.value })
                   }
@@ -1381,7 +1765,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
+                  className="flex-1 py-2 rounded-xl bg-[#D8315B] text-white font-semibold"
                 >
                   Save Crew
                 </button>
@@ -1441,7 +1825,7 @@ export const AdminDashboardPage: React.FC = () => {
                   isEnabled: true,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C83E5B] text-white text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D8315B] text-white text-xs font-semibold"
             >
               <Plus className="w-4 h-4" /> Create Coupon
             </button>
@@ -1509,7 +1893,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-[#C83E5B] text-white font-semibold"
+                  className="flex-1 py-2 rounded-xl bg-[#D8315B] text-white font-semibold"
                 >
                   Save
                 </button>
@@ -1612,7 +1996,7 @@ export const AdminDashboardPage: React.FC = () => {
                       {u.email} {u.phone ? `· ${u.phone}` : ''}
                     </p>
                   </div>
-                  <span className="text-[#6E5D5F]">{u.defaultCity || 'Mumbai'}</span>
+                  <span className="text-[#6E5D5F]">{u.defaultCity || 'Jaipur'}</span>
                 </div>
               ))}
             </div>
@@ -1655,7 +2039,7 @@ export const AdminDashboardPage: React.FC = () => {
           className="bg-white rounded-3xl p-6 sm:p-8 border border-[#1C1618]/8 space-y-5 max-w-3xl text-xs"
         >
           <h2 className="font-serif-display text-2xl font-bold text-[#1C1618]">
-            Website Branding, Announcement Bar & Booking Rules
+            Website Branding, Phone / WhatsApp & Booking Rules
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1759,9 +2143,9 @@ export const AdminDashboardPage: React.FC = () => {
 
           <button
             type="submit"
-            className="px-6 py-3 rounded-xl bg-[#C83E5B] text-white font-semibold"
+            className="px-6 py-3 rounded-xl bg-[#D8315B] text-white font-bold"
           >
-            Save Global Settings to Firestore
+            Save Website Settings
           </button>
         </form>
       )}

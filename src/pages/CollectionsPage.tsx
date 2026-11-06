@@ -14,7 +14,6 @@ import {
 import { useStore } from '../context/StoreContext';
 import { ProductCard } from '../components/ProductCard';
 import { SmartImage } from '../components/SmartImage';
-import { ASSET_MANIFEST } from '../data/seedData';
 import { SubcategoryItem } from '../types';
 
 export const CollectionsPage: React.FC = () => {
@@ -33,7 +32,14 @@ export const CollectionsPage: React.FC = () => {
 
   const activeCategory = useMemo(() => {
     if (!categorySlug) return null;
-    return categories.find((c) => c.slug === categorySlug || c.id === categorySlug) || null;
+    const aliasMap: Record<string, string> = {
+      'baby-kids': 'kids-themes',
+      wedding: 'wedding-suit',
+      romantic: 'anniversary',
+      other: 'festive-special',
+    };
+    const resolvedSlug = aliasMap[categorySlug] || categorySlug;
+    return categories.find((c) => c.slug === resolvedSlug || c.id === resolvedSlug) || null;
   }, [categories, categorySlug]);
 
   const subcategories: SubcategoryItem[] = useMemo(() => {
@@ -108,36 +114,47 @@ export const CollectionsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 space-y-6 pb-20">
-      {/* 1. Promotional Banner at Top of Category Page (Matches Video 00:20 & 00:22) */}
-      <div className="rounded-3xl overflow-hidden bg-gradient-to-r from-[#FFF0F3] via-[#FDE2E8] to-[#FAD1DC] border border-[#D8315B]/15 p-4 sm:p-7 grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-7 space-y-1.5">
-          <span className="text-xs font-extrabold text-[#D8315B] lowercase">
-            {websiteSettings.brandName}
-          </span>
-          <h2 className="text-base sm:text-2xl font-extrabold text-[#1C1618] leading-tight">
-            Kids’ Birthday
-            <br />
-            Decorations
-          </h2>
-          <p className="text-xs font-bold text-[#1C1618]">Starts at ₹1,499</p>
-          <div className="pt-1">
+      {/* 1. Promotional Banner at Top of Category Page */}
+      <Link
+        to="/collections/kids-themes"
+        className="block rounded-2xl sm:rounded-3xl overflow-hidden border border-[#1C1618]/8 shadow-xs"
+      >
+        <SmartImage
+          src="https://cdn.balloondekor.com/22/kids-banner-for-birthday.webp"
+          alt="Kids Birthday Decorations"
+          className="w-full h-auto object-cover"
+        />
+      </Link>
+
+      {/* Category-by-Category Switcher Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <Link
+          to="/collections"
+          className={`px-3.5 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-colors shrink-0 ${
+            !activeCategory && !showWishlistOnly
+              ? 'bg-[#1C1618] text-white'
+              : 'bg-white border border-[#1C1618]/12 text-[#444444] hover:border-[#D8315B]'
+          }`}
+        >
+          All Categories ({products.filter((p) => p.isEnabled).length})
+        </Link>
+        {categories.map((cat) => {
+          const count = products.filter((p) => p.isEnabled && p.categoryId === cat.id).length;
+          const isCurrent = activeCategory?.id === cat.id;
+          return (
             <Link
-              to="/collections/kids-themes"
-              className="inline-block px-3.5 py-1.5 rounded-lg bg-[#D8315B] text-white text-[11px] font-bold"
+              key={cat.id}
+              to={`/collections/${cat.slug}`}
+              className={`px-3.5 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-colors shrink-0 ${
+                isCurrent
+                  ? 'bg-[#D8315B] text-white'
+                  : 'bg-white border border-[#1C1618]/12 text-[#444444] hover:border-[#D8315B]'
+              }`}
             >
-              Explore Now
+              {cat.name} ({count})
             </Link>
-          </div>
-        </div>
-        <div className="col-span-5">
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-white/60 shadow-xs">
-            <SmartImage
-              src={ASSET_MANIFEST.kidsTheme}
-              alt="Kids Birthday Decorations"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* 2. Breadcrumb + Category Title + Green Rating Pill + Description (Matches Video 00:20) */}
