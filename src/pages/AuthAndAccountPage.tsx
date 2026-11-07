@@ -335,15 +335,6 @@ export const CustomerDashboardPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1C1618] text-white text-xs font-semibold"
-            >
-              <ShieldCheck className="w-4 h-4 text-[#F4C2C2]" />
-              <span>Open Admin Panel</span>
-            </Link>
-          )}
           <button
             type="button"
             onClick={async () => {

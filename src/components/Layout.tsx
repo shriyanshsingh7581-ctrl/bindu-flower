@@ -8,7 +8,6 @@ import {
   X,
   ChevronDown,
   PhoneCall,
-  ShieldCheck,
   Download,
   Sparkles,
   Home,
@@ -370,15 +369,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <User className="w-5 h-5" />
             </Link>
 
-            <Link
-              to="/admin"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#1C1618] text-white text-[11px] font-bold hover:bg-[#D8315B] transition-colors"
-              title="Open Full Admin Control Panel"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#F4C2C2]" />
-              <span>Admin</span>
-            </Link>
-
             {!isInstalled && isInstallable && (
               <button
                 type="button"
@@ -711,8 +701,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   </Link>
                 </li>
                 <li>
-                  <Link to="/admin" className="font-bold text-[#D8315B] hover:underline">
-                    ⚙️ Admin Control Panel
+                  <Link to="/collections/corporate-events" className="hover:text-[#D8315B]">
+                    Shop & Office Opening Decor
                   </Link>
                 </li>
               </ul>
