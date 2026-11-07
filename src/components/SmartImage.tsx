@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
-import { resolveAssetUrl, ASSET_MANIFEST } from '../data/seedData';
+import { resolveAssetUrl } from '../data/seedData';
 
 interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackTitle?: string;
@@ -24,8 +24,8 @@ export const SmartImage: React.FC<SmartImageProps> = ({
   }, [src]);
 
   const handleError = () => {
-    // Stage 0: If CloudFront / CDN returned 403 due to CORS or referer, try image-proxy endpoint (wsrv.nl / images.weserv.nl)
-    if (retryStage === 0 && currentSrc && currentSrc.startsWith('https://cdn.balloondekor.com/')) {
+    // Stage 0: If direct CDN fails on a restricted network, try global image proxy wsrv.nl
+    if (retryStage === 0 && currentSrc && currentSrc.startsWith('https://')) {
       const cleanUrl = currentSrc.replace(/^https?:\/\//, '');
       const proxied = `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&output=webp`;
       setRetryStage(1);
@@ -33,14 +33,16 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       return;
     }
 
-    // Stage 1: Try local bundled image fallback
-    if (retryStage <= 1) {
+    // Stage 1: Try secondary mirror proxy images.weserv.nl
+    if (retryStage === 1 && src && src.startsWith('https://')) {
+      const cleanUrl = src.replace(/^https?:\/\//, '');
+      const proxied2 = `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}`;
       setRetryStage(2);
-      setCurrentSrc(ASSET_MANIFEST.localBirthdayFallback || ASSET_MANIFEST.birthdayRoseGold);
+      setCurrentSrc(proxied2);
       return;
     }
 
-    // Stage 2: Failed both CDN and proxy, show clean styled brand placeholder
+    // Stage 2: Show clean styled brand card (never substitute another product's photo)
     setRetryStage(3);
   };
 
@@ -64,7 +66,6 @@ export const SmartImage: React.FC<SmartImageProps> = ({
       src={currentSrc}
       alt={alt || fallbackTitle || 'Bindu flower Celebration'}
       referrerPolicy="no-referrer"
-      crossOrigin="anonymous"
       loading="lazy"
       onError={handleError}
       className={className}
@@ -72,3 +73,4 @@ export const SmartImage: React.FC<SmartImageProps> = ({
     />
   );
 };
+

@@ -12,28 +12,33 @@ export const HomePage: React.FC = () => {
 
   const enabledProducts = products.filter((p) => p.isEnabled);
 
-  // Strict category-by-category deduplication so no product ever appears twice on the homepage
+  // Strict category-by-category deduplication so no product or photo ever appears twice on the homepage
   const usedIds = new Set<string>();
-  const takeUniqueByCategory = (categoryId: string, limit = 4) => {
-    const list = enabledProducts.filter(
-      (p) => p.categoryId === categoryId && !usedIds.has(p.id)
-    );
-    const slice = list.slice(0, limit);
-    slice.forEach((p) => usedIds.add(p.id));
-    return slice;
+  const usedImages = new Set<string>();
+  const takeUniqueByCategory = (categoryId: string, limit = 5) => {
+    const result = [];
+    for (const p of enabledProducts) {
+      if (p.categoryId !== categoryId) continue;
+      if (usedIds.has(p.id) || usedImages.has(p.primaryImage)) continue;
+      usedIds.add(p.id);
+      usedImages.add(p.primaryImage);
+      result.push(p);
+      if (result.length >= limit) break;
+    }
+    return result;
   };
 
   const birthdayProducts = takeUniqueByCategory('birthday', 5);
-  const kidsThemeProducts = takeUniqueByCategory('kids-themes', 4);
-  const halloweenProducts = takeUniqueByCategory('halloween-decor', 4);
+  const kidsThemeProducts = takeUniqueByCategory('kids-themes', 8);
+  const halloweenProducts = takeUniqueByCategory('halloween-decor', 8);
   const anniversaryProducts = takeUniqueByCategory('anniversary', 5);
   const welcomeBabyProducts = takeUniqueByCategory('newborn-welcome', 5);
   const babyShowerProducts = takeUniqueByCategory('baby-shower', 5);
   const balloonHamperProducts = takeUniqueByCategory('balloon-bouquets', 5);
   const bacheloretteProducts = takeUniqueByCategory('bachelorette', 5);
-  const weddingCarProducts = takeUniqueByCategory('car-decoration', 5);
+  const weddingCarProducts = takeUniqueByCategory('car-decoration', 6);
   const shopAndOfficeProducts = takeUniqueByCategory('corporate-events', 5);
-  const weddingHaldiProducts = takeUniqueByCategory('wedding-suit', 4);
+  const weddingHaldiProducts = takeUniqueByCategory('wedding-suit', 8);
   const diwaliAndBinduProducts = takeUniqueByCategory('festive-special', 5);
   const canopyProposalProducts = takeUniqueByCategory('romantic-surprises', 4);
 
@@ -241,7 +246,7 @@ export const HomePage: React.FC = () => {
           <div className="lg:col-span-5 flex items-center justify-end">
             <div className="relative w-full max-w-xs sm:max-w-sm aspect-[16/10] rounded-2xl overflow-hidden border-2 border-[#D97706]/30 shadow-md">
               <SmartImage
-                src="https://cdn.balloondekor.com/76/traditional-diwali-home-decoration.webp"
+                src="https://cdn.balloondekor.com/22/diwali-decor.webp"
                 alt="Festive Diwali Marigold & Diya Decoration"
                 className="w-full h-full object-cover"
               />
@@ -709,7 +714,7 @@ export const HomePage: React.FC = () => {
           <p>
             Planning something bigger than an anniversary? Our{' '}
             <Link
-              to="/collections/romantic?sub=proposal"
+              to="/collections/romantic-surprises?sub=marry-me-proposal"
               className="text-[#D8315B] underline font-medium"
             >
               proposal decorations
@@ -717,7 +722,7 @@ export const HomePage: React.FC = () => {
             create the kind of setting where the question feels as big as it is. And for occasions
             that deserve a more intimate touch, our{' '}
             <Link
-              to="/collections/romantic?sub=canopy"
+              to="/collections/romantic-surprises?sub=canopy-setup"
               className="text-[#D8315B] underline font-medium"
             >
               room decorations
@@ -737,7 +742,7 @@ export const HomePage: React.FC = () => {
           <p>
             Our{' '}
             <Link
-              to="/collections/baby-kids?sub=baby-shower"
+              to="/collections/baby-shower"
               className="text-[#D8315B] underline font-medium"
             >
               baby shower decorations
@@ -749,7 +754,7 @@ export const HomePage: React.FC = () => {
           <p>
             When the baby comes home, our{' '}
             <Link
-              to="/collections/baby-kids?sub=newborn-welcome"
+              to="/collections/newborn-welcome"
               className="text-[#D8315B] underline font-medium"
             >
               newborn welcome decoration
@@ -767,7 +772,7 @@ export const HomePage: React.FC = () => {
           <p>
             Indian weddings are five events wrapped into one week, and not every function needs a
             five-lakh decorator. Our{' '}
-            <Link to="/collections/wedding" className="text-[#D8315B] underline font-medium">
+            <Link to="/collections/wedding-suit" className="text-[#D8315B] underline font-medium">
               Haldi, Mehndi, Bride Welcome, Wedding Car, and First Night decorations
             </Link>{' '}
             deliver marigold arches, Bindu Flower floral backdrops, and floor seating arrangements

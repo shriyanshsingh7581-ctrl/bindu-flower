@@ -197,34 +197,34 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Local Admin Overrides (so Admin Panel changes persist immediately even without Google OAuth on Vercel)
   const [localProducts, setLocalProducts] = useState<Record<string, Product>>(() =>
-    readLocalJson('bindu_admin_products_v2', {})
+    readLocalJson('bindu_admin_products_v3', {})
   );
   const [deletedProductIds, setDeletedProductIds] = useState<string[]>(() =>
-    readLocalJson('bindu_deleted_products_v2', [])
+    readLocalJson('bindu_deleted_products_v3', [])
   );
   const [localCategories, setLocalCategories] = useState<Record<string, Category>>(() =>
-    readLocalJson('bindu_admin_categories_v2', {})
+    readLocalJson('bindu_admin_categories_v3', {})
   );
   const [deletedCategoryIds, setDeletedCategoryIds] = useState<string[]>(() =>
-    readLocalJson('bindu_deleted_categories_v2', [])
+    readLocalJson('bindu_deleted_categories_v3', [])
   );
   const [localAddOns, setLocalAddOns] = useState<Record<string, AddOn>>(() =>
-    readLocalJson('bindu_admin_addons_v2', {})
+    readLocalJson('bindu_admin_addons_v3', {})
   );
   const [deletedAddOnIds, setDeletedAddOnIds] = useState<string[]>(() =>
-    readLocalJson('bindu_deleted_addons_v2', [])
+    readLocalJson('bindu_deleted_addons_v3', [])
   );
   const [localCities, setLocalCities] = useState<Record<string, City>>(() =>
-    readLocalJson('bindu_admin_cities_v2', {})
+    readLocalJson('bindu_admin_cities_v3', {})
   );
   const [localCoupons, setLocalCoupons] = useState<Record<string, Coupon>>(() =>
-    readLocalJson('bindu_admin_coupons_v2', {})
+    readLocalJson('bindu_admin_coupons_v3', {})
   );
   const [deletedCouponIds, setDeletedCouponIds] = useState<string[]>(() =>
-    readLocalJson('bindu_deleted_coupons_v2', [])
+    readLocalJson('bindu_deleted_coupons_v3', [])
   );
   const [localSettings, setLocalSettings] = useState<WebsiteSetting | null>(() =>
-    readLocalJson('bindu_admin_settings_v2', null)
+    readLocalJson('bindu_admin_settings_v3', null)
   );
 
   const [selectedCityId, setSelectedCityId] = useState<string>(() => {
@@ -269,55 +269,55 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     try {
-      localStorage.setItem('bindu_admin_products_v2', JSON.stringify(localProducts));
+      localStorage.setItem('bindu_admin_products_v3', JSON.stringify(localProducts));
     } catch {
       // ignore storage quota warnings for large base64 images
     }
   }, [localProducts]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_deleted_products_v2', JSON.stringify(deletedProductIds));
+    localStorage.setItem('bindu_deleted_products_v3', JSON.stringify(deletedProductIds));
   }, [deletedProductIds]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('bindu_admin_categories_v2', JSON.stringify(localCategories));
+      localStorage.setItem('bindu_admin_categories_v3', JSON.stringify(localCategories));
     } catch {
       // ignore
     }
   }, [localCategories]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_deleted_categories_v2', JSON.stringify(deletedCategoryIds));
+    localStorage.setItem('bindu_deleted_categories_v3', JSON.stringify(deletedCategoryIds));
   }, [deletedCategoryIds]);
 
   useEffect(() => {
     try {
-      localStorage.setItem('bindu_admin_addons_v2', JSON.stringify(localAddOns));
+      localStorage.setItem('bindu_admin_addons_v3', JSON.stringify(localAddOns));
     } catch {
       // ignore
     }
   }, [localAddOns]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_deleted_addons_v2', JSON.stringify(deletedAddOnIds));
+    localStorage.setItem('bindu_deleted_addons_v3', JSON.stringify(deletedAddOnIds));
   }, [deletedAddOnIds]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_admin_cities_v2', JSON.stringify(localCities));
+    localStorage.setItem('bindu_admin_cities_v3', JSON.stringify(localCities));
   }, [localCities]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_admin_coupons_v2', JSON.stringify(localCoupons));
+    localStorage.setItem('bindu_admin_coupons_v3', JSON.stringify(localCoupons));
   }, [localCoupons]);
 
   useEffect(() => {
-    localStorage.setItem('bindu_deleted_coupons_v2', JSON.stringify(deletedCouponIds));
+    localStorage.setItem('bindu_deleted_coupons_v3', JSON.stringify(deletedCouponIds));
   }, [deletedCouponIds]);
 
   useEffect(() => {
     if (localSettings) {
-      localStorage.setItem('bindu_admin_settings_v2', JSON.stringify(localSettings));
+      localStorage.setItem('bindu_admin_settings_v3', JSON.stringify(localSettings));
     }
   }, [localSettings]);
 
@@ -529,7 +529,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [authLoading, currentUser, isAdmin]);
 
   // Strict Deduplication & Catalog Merge:
-  // Every product appears ONCE and ONLY ONCE across the platform.
+  // Every product and every product photo appears ONCE and ONLY ONCE across the platform.
   const products = useMemo(() => {
     const map = new Map<string, Product>();
     const deletedSet = new Set(deletedProductIds);
@@ -551,21 +551,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
     };
 
-    // 1. Load the 69 unique official SEED_PRODUCTS
+    // 1. Load the 88 unique official SEED_PRODUCTS with real BalloonDekor photos & descriptions
     SEED_PRODUCTS.forEach((p) => {
       if (!deletedSet.has(p.id)) {
         map.set(p.id, normalizeProduct(p));
       }
     });
 
-    // 2. Merge Firestore products ONLY if they match current catalog IDs or were newly created via Admin
-    // (Skip legacy seeded records that used old /src/assets/images/ paths)
+    // 2. Merge Firestore products ONLY if they were explicitly edited after seed timestamp or newly created by Admin
+    // (Skip stale/legacy seeded records so real BalloonDekor descriptions & photos are never overwritten)
     dbProducts.forEach((p) => {
       if (deletedSet.has(p.id)) return;
-      const isLegacyLocalSeed =
-        !SEED_PRODUCT_IDS.has(p.id) &&
-        (!p.primaryImage || p.primaryImage.startsWith('/src/assets/images/'));
-      if (isLegacyLocalSeed) return;
+      if (!p.primaryImage || p.primaryImage.startsWith('/src/assets/images/')) return;
+      const isSeedItem = SEED_PRODUCT_IDS.has(p.id);
+      const wasEditedByAdmin = Boolean(p.updatedAt && p.updatedAt > '2026-11-05T08:00:00.000Z');
+      if (isSeedItem && !wasEditedByAdmin) return;
       map.set(p.id, normalizeProduct(p));
     });
 
@@ -576,23 +576,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     });
 
-    // 4. Final pass: ensure strict uniqueness by slug and normalized title
+    // 4. Final pass: ensure strict uniqueness by slug, normalized title, AND primaryImage
     const seenSlugs = new Set<string>();
     const seenTitles = new Set<string>();
+    const seenImages = new Set<string>();
     const uniqueList: Product[] = [];
 
-    // Process local admin edits first if they share a slug/title, otherwise preserve seed order
     const allItems = Array.from(map.values());
     for (const item of allItems) {
       const normSlug = item.slug.trim().toLowerCase();
       const normTitle = item.title.trim().toLowerCase();
-      if (seenSlugs.has(normSlug) || seenTitles.has(normTitle)) {
-        // If there is a local override for this item, replace the earlier entry
+      const normImg = item.primaryImage.trim();
+
+      if (seenSlugs.has(normSlug) || seenTitles.has(normTitle) || seenImages.has(normImg)) {
+        // If there is a local admin override for this item, replace the earlier entry
         if (localProducts[item.id]) {
           const idx = uniqueList.findIndex(
             (u) =>
               u.slug.trim().toLowerCase() === normSlug ||
-              u.title.trim().toLowerCase() === normTitle
+              u.title.trim().toLowerCase() === normTitle ||
+              u.primaryImage.trim() === normImg
           );
           if (idx !== -1) {
             uniqueList[idx] = item;
@@ -602,6 +605,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       seenSlugs.add(normSlug);
       seenTitles.add(normTitle);
+      seenImages.add(normImg);
       uniqueList.push(item);
     }
 
@@ -1415,22 +1419,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setLocalCoupons({});
     setDeletedCouponIds([]);
     setLocalSettings(null);
-    localStorage.removeItem('bindu_admin_products_v2');
-    localStorage.removeItem('bindu_deleted_products_v2');
-    localStorage.removeItem('bindu_admin_categories_v2');
-    localStorage.removeItem('bindu_deleted_categories_v2');
-    localStorage.removeItem('bindu_admin_addons_v2');
-    localStorage.removeItem('bindu_deleted_addons_v2');
-    localStorage.removeItem('bindu_admin_cities_v2');
-    localStorage.removeItem('bindu_admin_coupons_v2');
-    localStorage.removeItem('bindu_deleted_coupons_v2');
-    localStorage.removeItem('bindu_admin_settings_v2');
-    showToast('Restored official 69-product catalog!', 'info');
+    localStorage.removeItem('bindu_admin_products_v3');
+    localStorage.removeItem('bindu_deleted_products_v3');
+    localStorage.removeItem('bindu_admin_categories_v3');
+    localStorage.removeItem('bindu_deleted_categories_v3');
+    localStorage.removeItem('bindu_admin_addons_v3');
+    localStorage.removeItem('bindu_deleted_addons_v3');
+    localStorage.removeItem('bindu_admin_cities_v3');
+    localStorage.removeItem('bindu_admin_coupons_v3');
+    localStorage.removeItem('bindu_deleted_coupons_v3');
+    localStorage.removeItem('bindu_admin_settings_v3');
+    showToast('Restored official 88-product catalog!', 'info');
   };
 
   const seedInitialDatabaseIfNeeded = async () => {
     if (!currentUser || !isAdmin) {
-      showToast('All 69 unique products & 13 categories are active locally! Sign in with Google Admin to sync to Cloud Firestore.', 'info');
+      showToast('All 88 unique products & 13 categories are active locally! Sign in with Google Admin to sync to Cloud Firestore.', 'info');
       return;
     }
     try {
@@ -1453,7 +1457,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await setDoc(doc(db, 'decorators', dec.id), dec);
       }
       await setDoc(doc(db, 'websiteSettings', 'global'), SEED_WEBSITE_SETTINGS);
-      showToast('All 69 unique products & 13 categories synced to live Firestore database!');
+      showToast('All 88 unique products & 13 categories synced to live Firestore database!');
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, 'seedDatabase');
     }

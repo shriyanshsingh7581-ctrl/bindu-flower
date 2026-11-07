@@ -287,7 +287,7 @@ export const CollectionsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. 2-Column Mobile / 4-Column Desktop Product Grid (Matches Video 00:21) */}
+      {/* 4. Category-by-Category Sections (when viewing All Categories) or 4-Column Category Grid */}
       {filteredProducts.length === 0 ? (
         <div className="bg-white rounded-3xl p-10 text-center border border-[#1C1618]/10 space-y-3">
           <h2 className="text-xl font-extrabold text-[#1C1618]">No Matching Packages Found</h2>
@@ -304,6 +304,44 @@ export const CollectionsPage: React.FC = () => {
           >
             Show All Packages
           </button>
+        </div>
+      ) : !activeCategory && !showWishlistOnly && subSlug === 'all' && !localSearch.trim() ? (
+        <div className="space-y-10">
+          {categories.map((cat) => {
+            const catProducts = filteredProducts.filter((p) => p.categoryId === cat.id);
+            if (catProducts.length === 0) return null;
+            return (
+              <section key={cat.id} className="space-y-4 pt-2 border-t border-[#1C1618]/8 first:border-t-0 first:pt-0">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start gap-2.5">
+                    <span className="w-1 h-7 rounded-full bg-[#D8315B] shrink-0 mt-0.5" />
+                    <div>
+                      <h2 className="text-lg sm:text-2xl font-extrabold text-[#1C1618]">
+                        {cat.name}{' '}
+                        <span className="text-xs sm:text-sm font-bold text-[#6E5D5F]">
+                          ({catProducts.length})
+                        </span>
+                      </h2>
+                      <p className="text-xs text-[#6E5D5F] mt-0.5">{cat.description}</p>
+                    </div>
+                  </div>
+                  <Link
+                    to={`/collections/${cat.slug}`}
+                    className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#FFF0F3] text-[#D8315B] text-xs font-bold hover:bg-[#fde0e6] transition-colors shrink-0"
+                  >
+                    <span>View Category</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
+                  {catProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-6">
