@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="104" viewBox="0 0 720 104" fill="none">
+<defs>
+<radialGradient id="petal" cx=".3" cy=".25" r=".8"><stop stop-color="#ffe58d"/><stop offset=".45" stop-color="#ffc13f"/><stop offset="1" stop-color="#e97915"/></radialGradient>
+<radialGradient id="heart" cx=".35" cy=".3" r=".7"><stop stop-color="#ffdb6a"/><stop offset=".6" stop-color="#fca820"/><stop offset="1" stop-color="#d46912"/></radialGradient>
+<linearGradient id="leaf"><stop stop-color="#476c38"/><stop offset=".5" stop-color="#83a354"/><stop offset="1" stop-color="#3c6030"/></linearGradient>
+<g id="flower">
+<circle r="12" fill="#c6741e" opacity=".16" cy="2"/>
+<g fill="url(#petal)"><ellipse ry="12" rx="5"/><ellipse ry="12" rx="5" transform="rotate(30)"/><ellipse ry="12" rx="5" transform="rotate(60)"/><ellipse ry="12" rx="5" transform="rotate(90)"/><ellipse ry="12" rx="5" transform="rotate(120)"/><ellipse ry="12" rx="5" transform="rotate(150)"/></g>
+<circle r="7" fill="url(#heart)"/><path d="m-3-3 2 1 2-2 2 3-1 3-3 1-2-3Z" stroke="#ffe093" stroke-width="1.3"/>
+</g>
+<g id="mango"><path d="M0 0C18 6 21 27 4 39-2 24-9 11 0 0Z" fill="url(#leaf)"/><path d="m1 5 3 28" stroke="#c4cd7d" stroke-width=".8"/></g>
+<g id="swag">
+<path d="M0 8Q90 79 180 8" stroke="#bd883f" stroke-width="2"/>
+<use href="#mango" transform="translate(34 31) rotate(18)"/><use href="#mango" transform="translate(145 31) rotate(-18)"/>
+<use href="#flower" x="0" y="9"/><use href="#flower" x="17" y="20"/><use href="#flower" x="35" y="30"/><use href="#flower" x="54" y="37"/><use href="#flower" x="72" y="42"/><use href="#flower" x="90" y="44"/><use href="#flower" x="108" y="42"/><use href="#flower" x="126" y="37"/><use href="#flower" x="145" y="30"/><use href="#flower" x="163" y="20"/>
+<path d="M90 53v21" stroke="#b68037"/><circle cx="90" cy="60" r="3" fill="#ecc36b"/><circle cx="90" cy="69" r="3" fill="#ecc36b"/><path d="M81 87q9-20 18 0Z" fill="#d14a61"/><path d="M81 87h18" stroke="#a82e49" stroke-width="2"/><circle cx="90" cy="92" r="3" fill="#e5ac4c"/>
+</g>
+</defs>
+<path d="M0 6h720" stroke="#b48645" stroke-width="2"/><use href="#swag"/><use href="#swag" x="180"/><use href="#swag" x="360"/><use href="#swag" x="540"/>
+</svg>

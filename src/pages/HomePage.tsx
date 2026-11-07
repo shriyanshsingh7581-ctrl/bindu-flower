@@ -204,60 +204,37 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 space-y-9">
-      {/* 1. Festive Diwali Hero Banner Card */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#FDF5E6] via-[#FCEBD2] to-[#FAD8B4] border border-[#E6C594]/60 shadow-xs">
-        {/* Decorative Marigold Garland Toran Strip at Top */}
-        <div
-          aria-hidden="true"
-          className="w-full py-1.5 px-2 bg-[#FDF5E6]/60 flex items-center justify-between overflow-hidden select-none text-sm sm:text-base border-b border-[#E6C594]/40"
-        >
-          {Array.from({ length: 18 }).map((_, i) => (
-            <span key={i} className="shrink-0">
-              {i % 2 === 0 ? '🌼' : '🏵️'}
-            </span>
-          ))}
-        </div>
-
-        <div className="p-5 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          <div className="lg:col-span-7 space-y-3">
-            <p className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#8C3B2B]">
-              THE FESTIVE EDIT <span className="text-[#D97706] mx-1">✦</span> DIWALI
-            </p>
-            <h1 className="text-2xl sm:text-5xl font-extrabold leading-[1.15] text-[#4A1C17]">
-              A little light.
-              <br />
-              <span className="text-[#C82333]">A lot of celebration.</span>
-            </h1>
-            <p className="text-xs sm:text-base text-[#6E473B] max-w-md leading-relaxed">
-              Make your home glow with love, light & beautiful decor.
-            </p>
-            <div className="pt-2">
-              <Link
-                to="/collections/festive-special"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#C82333] text-white text-xs sm:text-sm font-bold hover:bg-[#a71d2a] transition-colors shadow-sm"
-              >
-                <span>Explore Diwali decor</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Festive Diyas & Marigold Visual */}
-          <div className="lg:col-span-5 flex items-center justify-end">
-            <div className="relative w-full max-w-xs sm:max-w-sm aspect-[16/10] rounded-2xl overflow-hidden border-2 border-[#D97706]/30 shadow-md">
-              <SmartImage
-                src="https://cdn.balloondekor.com/22/diwali-decor.webp"
-                alt="Festive Diwali Marigold & Diya Decoration"
-                className="w-full h-full object-cover"
+      {/* 1. Official Festive Diwali Hero Card with SVG Marigold Toran Garland & Glowing Diyas */}
+      <section className="bd-diwali-card" aria-labelledby="diwali-welcome-title">
+        <div className="bd-diwali-garland" aria-hidden="true" />
+        <div className="bd-diwali-copy">
+          <p className="bd-diwali-eyebrow">
+            The festive edit <span aria-hidden="true">✦</span> Diwali
+          </p>
+          <h2 id="diwali-welcome-title" className="bd-diwali-title">
+            A little light.
+            <br /> A lot of <span>celebration.</span>
+          </h2>
+          <p className="bd-diwali-description">
+            Make your home glow with love, light &amp; beautiful decor.
+          </p>
+          <Link to="/collections/festive-special" className="bd-diwali-cta">
+            <span>Explore Diwali decor</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M5 12h14m-5-5 5 5-5 5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#3A1618]/70 via-transparent to-transparent flex items-end p-3">
-                <span className="text-white text-xs font-bold">
-                  🪔 Marigold, Rangoli & Fairy Lights · Starting ₹1,499
-                </span>
-              </div>
-            </div>
-          </div>
+            </svg>
+          </Link>
         </div>
+        <div className="bd-diwali-art" aria-hidden="true" />
+        <span className="bd-diwali-wish" aria-hidden="true">
+          Little details. Brighter celebrations.
+        </span>
       </section>
 
       {/* 2. "Professional Balloon Decoration Services..." + 8-Item Pastel Category Grid */}

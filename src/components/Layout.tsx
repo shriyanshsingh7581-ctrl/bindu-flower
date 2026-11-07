@@ -188,39 +188,88 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#1C1618]">
-      {/* 1. Top Festive Announcement Bar (Matches Video 00:01 & 00:55) */}
-      <div
-        className={`${
-          isFranchisePage ? 'bg-[#0F172A]' : 'bg-[#3A1618]'
-        } text-white text-[11px] sm:text-xs px-3 py-1.5 text-center font-medium`}
-      >
-        {isFranchisePage ? (
+      {/* 1. Official Festive Diwali Ribbon with SVG Marigold Sprigs & Glowing Diya Lamp */}
+      {isFranchisePage ? (
+        <div className="bg-[#0F172A] text-white text-[11px] sm:text-xs px-3 py-1.5 text-center font-medium">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-1.5 flex-wrap">
             <span>Franchise applications are now open for selected cities across India.</span>
             <a href="#franchise-form" className="text-[#FBBF24] underline font-bold">
               Apply Now
             </a>
           </div>
-        ) : (
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
-            <span aria-hidden="true">🪔</span>
-            <span>{websiteSettings.announcementText}</span>
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="ml-3 px-2 py-0.5 rounded bg-white/15 text-[#F4C2C2] font-bold hover:underline"
-              >
-                Admin Panel
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="bd-diwali-ribbon">
+          <svg
+            className="bd-diwali-ribbon-flower"
+            viewBox="0 0 100 30"
+            fill="none"
+            aria-hidden="true"
+          >
+            <defs>
+              <radialGradient id="bd-header-marigold" cx=".3" cy=".25" r=".8">
+                <stop stopColor="#ffe9a1" />
+                <stop offset=".55" stopColor="#ffc34f" />
+                <stop offset="1" stopColor="#df8824" />
+              </radialGradient>
+              <g id="bd-header-bloom" fill="url(#bd-header-marigold)">
+                <ellipse rx="4" ry="10" />
+                <ellipse rx="4" ry="10" transform="rotate(45)" />
+                <ellipse rx="4" ry="10" transform="rotate(90)" />
+                <ellipse rx="4" ry="10" transform="rotate(135)" />
+                <circle r="4" fill="#efaa36" />
+              </g>
+              <g id="bd-header-sprig">
+                <path d="M1 13Q35 28 88 9" stroke="#c69b57" strokeWidth="1" />
+                <path
+                  d="M22 18q-1-14 16-15-1 12-16 15Zm39-1q13-8 20 0-9 10-20 0Z"
+                  fill="#6f8b4f"
+                />
+                <use href="#bd-header-bloom" x="7" y="13" />
+                <use href="#bd-header-bloom" x="43" y="18" />
+                <use href="#bd-header-bloom" x="90" y="9" />
+              </g>
+            </defs>
+            <use href="#bd-header-sprig" />
+          </svg>
 
-      {/* 2. Main Header Bar (Matches Video 00:01 - 00:08) */}
+          <div className="bd-diwali-ribbon-copy">
+            <svg width="19" height="22" viewBox="0 0 26 28" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="bd-header-lamp" x2="0" y2="1">
+                  <stop stopColor="#e88462" />
+                  <stop offset="1" stopColor="#a42e48" />
+                </linearGradient>
+              </defs>
+              <path d="M13 15c-8-4-3-9 1-14 1 6 7 11-1 14Z" fill="#f7bf52" />
+              <path d="M13 15c-3-2-1-5 1-7 2 4 3 6-1 7Z" fill="#fff4c3" />
+              <path d="M2 17h22c-2 8-20 10-22 0Z" fill="url(#bd-header-lamp)" />
+              <ellipse cx="13" cy="17" rx="11" ry="3" fill="#edb16e" />
+              <ellipse cx="13" cy="17" rx="8" ry="1.7" fill="#c87538" />
+              <path d="M13 17v-3" stroke="#824630" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+            <strong>Happy Diwali</strong>
+            <span className="bd-diwali-ribbon-detail">
+              <span aria-hidden="true">✦</span> A little light, a lot of love
+            </span>
+          </div>
+
+          <svg
+            className="bd-diwali-ribbon-flower end"
+            viewBox="0 0 100 30"
+            fill="none"
+            aria-hidden="true"
+          >
+            <use href="#bd-header-sprig" />
+          </svg>
+        </div>
+      )}
+
+      {/* 2. Main Header Bar with Festive Diwali Golden Scalloped Trim */}
       <header
+        data-diwali-header="true"
         onMouseLeave={() => setActiveMegaCategory(null)}
-        className="sticky top-0 z-40 bg-white border-b border-[#1C1618]/8"
+        className="sticky top-0 z-40 bg-white border-b border-[#efd6b5]"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
           {/* Left: Hamburger + Brand Logo with "Rajasthan ka event expert" in small letters above "Bindu flower" */}
@@ -416,9 +465,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         )}
       </header>
 
-      {/* 3. Soft Pink Sub-Header Bar: "Deliver to: Select your city" + "Partner with us" (Matches Video 00:01 - 00:03) */}
+      {/* 3. Festive Warm Sub-Header Bar: "Deliver to: Select your city" + "Partner with us" */}
       {!isFranchisePage && (
-        <div className="bg-[#FFF0F3] border-b border-[#D8315B]/12">
+        <div data-diwali-city="true" className="bg-[#FFF0F3] border-b border-[#f0dece]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3">
             <button
               type="button"
@@ -512,9 +561,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Main Content */}
       <main className="flex-1 pb-24">{children}</main>
 
-      {/* 4. Exact BalloonDekor White Card Footer (Matches Video 00:39) */}
+      {/* 4. Exact BalloonDekor White Card Footer with Festive Diwali Marigold Toran Trim */}
       <footer className="px-3 sm:px-6 lg:px-8 pb-24 pt-6 bg-[#FAF7F5]">
-        <div className="max-w-7xl mx-auto bg-white rounded-3xl border border-[#1C1618]/10 p-6 sm:p-10 shadow-xs">
+        <div className="relative overflow-hidden max-w-7xl mx-auto bg-white rounded-3xl border border-[#f5dccd] p-6 sm:p-10 pt-14 sm:pt-16 shadow-xs">
+          <div
+            aria-hidden="true"
+            className="bd-diwali-garland opacity-85"
+          />
           <div className="space-y-4 pb-6 border-b border-[#1C1618]/10">
             <Link to="/" className="inline-flex flex-col leading-none">
               <span className="text-[10px] sm:text-[11px] font-medium text-[#555555] mb-0.5">

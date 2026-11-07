@@ -4,12 +4,13 @@
   :root {
     --font-display: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #FAF7F2;
+    background-color: #FFFDF9;
     color: #1C1618;
     overflow-x: hidden;
   }
@@ -28,3 +29,260 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Official Festive Deepavali / Diwali UI Theme (Exact BalloonDekor Festive Styling) */
+.bd-diwali-ribbon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #fff0df, #fff6e8 35%, #fff6e8 65%, #fce8e7);
+  color: #85502d;
+  font-size: 11px;
+  letter-spacing: 0.025em;
+  border-bottom: 1px solid #f3dec2;
+}
+.bd-diwali-ribbon strong {
+  color: #9b2a43;
+  font-weight: 700;
+}
+.bd-diwali-ribbon-copy {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  z-index: 1;
+}
+.bd-diwali-ribbon-flower {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  height: 30px;
+  width: 100px;
+  pointer-events: none;
+}
+.bd-diwali-ribbon-flower.end {
+  left: auto;
+  right: 24px;
+  transform: scaleX(-1);
+}
+
+[data-diwali-header] {
+  position: sticky;
+  background: linear-gradient(100deg, #fffaf3 0%, #fff 34%, #fff 70%, #fff6f3 100%);
+  border-bottom-color: #efd6b5;
+}
+[data-diwali-header]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 100%, #dcad62 1.2px, transparent 1.8px) 0 0 / 14px 3px repeat-x;
+  opacity: 0.85;
+}
+[data-diwali-nav] {
+  background: #fffcf8;
+  border-bottom-color: #f1dfce;
+}
+[data-diwali-city] {
+  background: linear-gradient(95deg, #fffaf2, #fff5f5);
+  border-bottom-color: #f0dece;
+}
+
+@media (min-width: 1024px) {
+  .bd-diwali-ribbon {
+    font-size: 11.5px;
+  }
+}
+@media (max-width: 639px) {
+  .bd-diwali-ribbon {
+    height: 28px;
+    font-size: 9.5px;
+    gap: 5px;
+  }
+  .bd-diwali-ribbon-flower {
+    left: -45px;
+    height: 26px;
+  }
+  .bd-diwali-ribbon-flower.end {
+    right: -45px;
+  }
+  .bd-diwali-ribbon-copy {
+    gap: 5px;
+  }
+}
+@media (max-width: 359px) {
+  .bd-diwali-ribbon-detail {
+    display: none;
+  }
+}
+
+/* Festive Diwali Hero Card with Marigold Toran Garland & Glowing Diyas */
+.bd-diwali-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 288px;
+  border: 1px solid #f5dccd;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 82% 66%, #ffedbb 0%, transparent 44%),
+    linear-gradient(110deg, #fff9f2 0%, #fff3ef 58%, #ffefd9 100%);
+  box-shadow: 0 8px 30px -12px rgba(189, 116, 37, 0.18);
+}
+.bd-diwali-garland {
+  position: absolute;
+  pointer-events: none;
+  inset: 0 0 auto;
+  height: 69px;
+  background: url('/images/festive/diwali-toran.svg') repeat-x center top / 480px 69px;
+}
+.bd-diwali-copy {
+  position: relative;
+  z-index: 1;
+  padding: 68px 40px 30px;
+  max-width: 64%;
+}
+.bd-diwali-eyebrow {
+  margin: 0 0 10px;
+  color: #95602c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.bd-diwali-eyebrow span {
+  margin: 0 7px;
+  color: #bd7425;
+}
+.bd-diwali-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 3.1vw, 40px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: #642b37;
+}
+.bd-diwali-title span {
+  color: #b93852;
+}
+.bd-diwali-description {
+  margin: 12px 0 18px;
+  max-width: 360px;
+  color: #77565a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.bd-diwali-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: #b93852;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+.bd-diwali-cta:hover {
+  background: #9b2a43;
+}
+.bd-diwali-cta:focus-visible {
+  outline: 3px solid #9b2a43;
+  outline-offset: 4px;
+}
+.bd-diwali-art {
+  position: absolute;
+  pointer-events: none;
+  width: 42%;
+  height: 240px;
+  right: 20px;
+  bottom: 14px;
+  background: url('/images/festive/diwali-diyas.svg') no-repeat center / contain;
+}
+.bd-diwali-wish {
+  position: absolute;
+  right: 50px;
+  bottom: 18px;
+  color: #96663f;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+@media (min-width: 900px) {
+  .bd-diwali-copy {
+    padding-left: 56px;
+  }
+  .bd-diwali-title {
+    max-width: 490px;
+  }
+  .bd-diwali-art {
+    right: 35px;
+    width: 37%;
+  }
+}
+@media (max-width: 639px) {
+  .bd-diwali-card {
+    min-height: 260px;
+    border-radius: 18px;
+  }
+  .bd-diwali-garland {
+    height: 47px;
+    background-size: 330px 47px;
+  }
+  .bd-diwali-copy {
+    padding: 53px 16px 20px;
+    max-width: 77%;
+  }
+  .bd-diwali-eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    margin-bottom: 9px;
+  }
+  .bd-diwali-eyebrow span {
+    margin: 0 4px;
+  }
+  .bd-diwali-title {
+    font-size: clamp(25px, 6.8vw, 32px);
+  }
+  .bd-diwali-description {
+    font-size: 11px;
+    max-width: 185px;
+    margin: 10px 0 15px;
+  }
+  .bd-diwali-cta {
+    padding: 10px 12px;
+    font-size: 11px;
+    gap: 7px;
+  }
+  .bd-diwali-art {
+    width: 47%;
+    right: -22px;
+    bottom: 26px;
+    height: 154px;
+  }
+  .bd-diwali-wish {
+    display: none;
+  }
+}
+@media (max-width: 359px) {
+  .bd-diwali-copy {
+    max-width: 86%;
+  }
+  .bd-diwali-art {
+    width: 37%;
+    right: -17px;
+    bottom: 35px;
+  }
+}
+

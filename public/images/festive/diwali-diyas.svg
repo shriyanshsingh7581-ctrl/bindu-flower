@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="290" viewBox="0 0 420 290" fill="none">
+<defs>
+<linearGradient id="clay" x1="40" y1="110" x2="140" y2="190" gradientUnits="userSpaceOnUse"><stop stop-color="#f9ad74"/><stop offset=".4" stop-color="#d96c4c"/><stop offset=".75" stop-color="#ac3f3a"/><stop offset="1" stop-color="#7e2a33"/></linearGradient>
+<linearGradient id="rim" x2="0" y2="1"><stop stop-color="#ffd29a"/><stop offset=".5" stop-color="#e99b60"/><stop offset="1" stop-color="#b75635"/></linearGradient>
+<radialGradient id="oil"><stop stop-color="#ffc85d"/><stop offset=".65" stop-color="#df8832"/><stop offset="1" stop-color="#8b452c"/></radialGradient>
+<linearGradient id="fire" x2="0" y2="1"><stop stop-color="#fff7c9"/><stop offset=".45" stop-color="#ffe184"/><stop offset="1" stop-color="#f6a426"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#ffdf85" stop-opacity=".65"/><stop offset="1" stop-color="#ffdf85" stop-opacity="0"/></radialGradient>
+<radialGradient id="rose"><stop stop-color="#f4b0b4"/><stop offset=".55" stop-color="#e67d8c"/><stop offset="1" stop-color="#be485d"/></radialGradient>
+<radialGradient id="gold"><stop stop-color="#ffe8a1"/><stop offset=".6" stop-color="#ffc64d"/><stop offset="1" stop-color="#ed9525"/></radialGradient>
+<g id="diya">
+<ellipse cx="100" cy="179" rx="78" ry="9" fill="#924827" opacity=".1"/>
+<path d="M17 124Q30 180 100 181q70-1 83-57Z" fill="url(#clay)"/>
+<ellipse cx="100" cy="124" rx="84" ry="27" fill="url(#rim)"/><ellipse cx="100" cy="122" rx="73" ry="19" fill="url(#oil)"/>
+<path d="M26 132q74 31 148 0" stroke="#ffe0a3" stroke-width="2.5" opacity=".9"/>
+<path d="M43 146q10 14 19 4 10 19 20 6 10 19 18 3 10 16 19-3 10 13 19-6 11 10 20-4" stroke="#fbc68d" stroke-width="2" stroke-linecap="round"/>
+<path d="m100 132 4-18" stroke="#6f3327" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="103" cy="77" rx="49" ry="60" fill="url(#glow)"/>
+<path d="M104 114c-25-4-17-29-4-44 8-10 7-20 7-20 29 32 26 63-3 64Z" fill="url(#fire)"/>
+<path d="M105 113c-12-5-8-16 2-30 10 16 13 27-2 30Z" fill="#fff9df"/>
+<path d="M30 120q14-12 38-14" stroke="#fff1c2" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+</g>
+<g id="petals" fill="url(#rose)"><ellipse rx="9" ry="21" cy="-21"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(45)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(90)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(135)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(180)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(225)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(270)"/><ellipse rx="9" ry="21" cy="-21" transform="rotate(315)"/><circle r="11" fill="url(#gold)"/></g>
+<path id="spark" d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" fill="#d39b42"/>
+</defs>
+<ellipse cx="215" cy="235" rx="169" ry="37" fill="#f1c698" opacity=".23"/>
+<g transform="translate(210 231) scale(1 .27)" stroke="#c87a57" opacity=".34"><circle r="158" stroke-width="2" stroke-dasharray="2 7"/><circle r="141" stroke-width="2"/><circle r="124" stroke-width="9" stroke-dasharray="2 10"/></g>
+<use href="#petals" transform="translate(87 218) scale(.75 .38) rotate(15)"/><use href="#petals" transform="translate(323 234) scale(.85 .4)"/>
+<use href="#diya" transform="translate(199 52) scale(.88)"/>
+<use href="#diya" transform="translate(51 68) scale(1.05)"/>
+<use href="#petals" transform="translate(212 260) scale(.58 .3)"/>
+<g fill="url(#gold)"><ellipse cx="58" cy="244" rx="7" ry="3" transform="rotate(18 58 244)"/><ellipse cx="285" cy="266" rx="6" ry="3" transform="rotate(-20 285 266)"/><ellipse cx="333" cy="208" rx="7" ry="3"/></g>
+<use href="#spark" x="85" y="74"/><use href="#spark" x="333" y="87" transform="rotate(15 333 87)"/><use href="#spark" x="215" y="42" transform="scale(.8)"/><circle cx="62" cy="114" r="2" fill="#d6a24e"/><circle cx="353" cy="147" r="2" fill="#d6a24e"/>
+</svg>
